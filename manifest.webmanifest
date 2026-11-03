@@ -1,0 +1,16 @@
+{
+  "name": "個人用工程請求管理",
+  "short_name": "工程請求",
+  "description": "見積・工程・請求を個人で管理するアプリ",
+  "lang": "ja",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "theme_color": "#0F2747",
+  "background_color": "#F3F6FA",
+  "icons": [
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}
