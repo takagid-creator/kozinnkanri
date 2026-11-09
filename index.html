@@ -869,6 +869,7 @@ body.viewmode .legend .lg-ai{display:inline-flex}
 body.ai-open main,body.ai-open .titleblock,body.ai-open nav.tabs{margin-right:calc(var(--ai-w) + 10px)}
 .ai-panel{position:fixed;top:0;right:0;bottom:0;width:var(--ai-w);max-width:100vw;background:#fff;border-left:1px solid #DCE3EC;box-shadow:-14px 0 36px rgba(15,39,71,.14);z-index:95;display:flex;flex-direction:column;animation:aiIn .35s var(--ease) both}
 .ai-panel[hidden]{display:none}
+.w-skip{margin:0 0 10px;padding:8px 12px;border:1px solid #F5D08A;background:#FFF8E6;border-radius:10px;font-size:12.5px;color:#7A4D00}.w-skip small{color:#8A6A2E}
 .ai-resize{position:absolute;left:-5px;top:0;bottom:0;width:10px;cursor:col-resize;z-index:2;touch-action:none}
 .ai-resize::after{content:"";position:absolute;left:3px;top:50%;width:4px;height:44px;margin-top:-22px;border-radius:4px;background:#C9D3E0;transition:background .15s}
 .ai-resize:hover::after,body.ai-resizing .ai-resize::after{background:#6D5DF6}
@@ -882,7 +883,8 @@ body.ai-resizing *{transition:none!important}
 .ai-head b{font-size:16px;flex:1}
 .ai-logo{width:28px;height:28px;border-radius:9px;background:#6D5DF6;display:flex;align-items:center;justify-content:center}
 .ai-user{display:flex;align-items:center;gap:6px;font-size:11.5px;color:#A9B8CE}
-.ai-user input{width:110px;border:0;border-radius:999px;padding:5px 10px;font:inherit;font-size:12.5px}
+.ai-user input{width:110px;border:0;border-radius:999px;padding:5px 10px;font:inherit;font-size:12.5px;color:#0F2747;font-weight:600}
+.ai-user input::placeholder{color:#94A3B8;font-weight:400}
 .ai-x{border:0;background:rgba(255,255,255,.14);color:#fff;width:30px;height:30px;border-radius:50%;font-size:16px;cursor:pointer}
 .ai-tabs{display:flex;gap:2px;margin:10px 16px 0;padding:3px;background:#E4EAF2;border-radius:999px}
 .ai-tabs button{flex:1;border:0;background:transparent;border-radius:999px;padding:6px 10px;font:inherit;font-size:13px;color:#5B6B82;cursor:pointer}
@@ -3462,8 +3464,9 @@ function renderOverview(){
       <span class="seg-cap">⇄ 表示を切り替え</span><div class="seg" data-ovseg><button data-ov="workers" aria-selected="${ovMode === "workers"}">作業者別集計</button><button data-ov="projects" aria-selected="${ovMode === "projects"}">案件別集計</button></div>
       <button class="save-btn" data-view="wreload" style="margin-left:auto">最新を読み込む</button></div>
     <p class="note" id="ovNote"></p>
-    <div id="wSummary"></div><div id="wGantt"><div class="empty">スプレッドシートから読み込んでいます…</div></div></div>`;
-  loadWorkers(false);
+    <div id="wSkip"></div><div id="wSummary"></div><div id="wGantt"><div class="empty">スプレッドシートから読み込んでいます…</div></div></div>`;
+  if(viewSched) drawOverview();      // 前に読んだ分をすぐ出し、そのあと最新を読み込む
+  loadWorkers(true);
 }
 async function loadWorkers(force){
   try{ if(!viewSched || force) viewSched = (await gasCall({action:"schedule"})).projects || []; drawOverview(); }
@@ -3566,6 +3569,8 @@ function drawOverview(){
   // 案件の色：開始の早い順に固定で割り当て（作業者別・全案件で同じ色）
   const spans = viewSched.map(p => ({p, ...projectSpan(p)})).filter(x => x.as !== null).sort((x, y) => x.as - y.as || String(x.p.name).localeCompare(String(y.p.name), "ja"));
   const color = new Map(spans.map((x, i) => [x.p.id, PCOL[i % PCOL.length]]));
+  const skipped = viewSched.filter(p => !spans.some(x => x.p.id === p.id)), sk = $("#wSkip");
+  if(sk) sk.innerHTML = skipped.length ? `<div class="w-skip"><b>表示していない案件：${skipped.length}件</b>　${skipped.map(p => esc(p.name || "（施設名未入力）") + (p.worker ? `（${esc(p.worker)}）` : "")).join("、")}<br><small>作業開始日・完了予定日（工程タブ）も、請求開始日・完了予定日（基本データ）も入っていないため、期間を描けません。どちらかを入れると表示されます。</small></div>` : "";
   if(!spans.length){ g.innerHTML = `<div class="empty">作業開始日・完了予定日が入った案件がありません。</div>`; sm.innerHTML = ""; return; }
   let lo = Math.min(...spans.map(x => x.as)), hi = Math.max(...spans.map(x => x.ae));
   const d0 = new Date(lo * 864e5), d1 = new Date(hi * 864e5);
@@ -4190,7 +4195,7 @@ function aiRender(scrollBottom){
     const pr = aiOpenProp;
     body = `<div class="ai-prop-h"><b>${esc(pr.pname)}</b><span>${esc(pr.by)}さんから・${new Date(pr.at).toLocaleString("ja-JP")}</span>${pr.note ? `<div class="ai-pnote">${esc(pr.note)}</div>` : ""}</div>
       <div class="ai-sep">全体用での会話</div>${(pr.convo || []).map(m => m.role === "user" ? `<div class="ai-msg me">${esc(m.text).replace(/\n/g, "<br>")}</div>` : `<div class="ai-msg ai">${aiMd(m.text)}</div>`).join("")}
-      ${aiOpsCard(pr, 0, "prop")}`;
+      ${pr.ops && pr.ops.length ? aiOpsCard(pr, 0, "prop") : `<div class="ai-ops"><div class="ai-ops-h"><b>変更案（0件）</b><span>この提案には変更案が入っていませんでした。全体用の「送った提案」で件数を確認するか、スプレッドシートの「AI提案」シートのI列（変更案）を確認してください。</span></div><div class="ai-ops-act"><button type="button" class="ai-sec" data-aiskip="prop">この提案を閉じる（見送り）</button></div></div>`}`;
     foot = `<div class="ai-quick"><button type="button" data-aiv="backinbox">← 届いた提案の一覧へ</button></div>`;
   }else if(aiPane === "sent"){
     body = aiSent === null ? `<div class="ai-empty">読み込んでいます…</div>` : aiSent.length ? `<table class="ai-tbl ai-sent"><thead><tr><th>送信</th><th>案件・宛先</th><th>状態</th></tr></thead><tbody>${aiSent.map(x => { const d = new Date(x.at); return `<tr><td>${d.getMonth() + 1}/${d.getDate()}<small>${esc(x.by)}</small></td><td>${esc(x.pname)}<small>${esc(x.to || "")}・${x.count}件</small></td><td><span class="ai-st ${x.status === "適用済み" ? "ok" : x.status === "未対応" ? "wait" : "part"}">${esc(x.status)}</span>${x.result && (x.result.applied || x.result.skipped) ? `<small>適用${x.result.applied || 0}・見送り${x.result.skipped || 0}</small>` : ""}</td></tr>`; }).join("")}</tbody></table>` : `<div class="ai-empty"><b>送った提案はまだありません</b></div>`;
@@ -4322,7 +4327,7 @@ aiInit();
 /* ============================================================
    公開版（GitHub Pages）用：更新のお知らせ・ホーム画面への追加・専用リンクの表示
    ============================================================ */
-const APP_VERSION = '14';
+const APP_VERSION = '16';
 (() => {
   const isWeb = /^https?:$/.test(location.protocol);
   // 専用リンクの結果／未設定の案内
