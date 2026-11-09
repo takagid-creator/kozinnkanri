@@ -499,6 +499,31 @@ label.donechk input{width:16px;height:16px;margin:0;accent-color:#6B7885}
 .g-bar.out{background:#F9D9DA} .g-bar.out i{background:#E5484D}
 .g-bar.done{background:#D5DAE1} .g-bar.done i{background:#8A96A8}
 .g-bar.late{outline:2px solid #F08C00;outline-offset:1px}
+.g-bar.drag{cursor:ew-resize;touch-action:none}
+.g-bar.drag:hover{box-shadow:0 0 0 2px rgba(109,93,246,.35)}
+.g-moving{transition:none!important;z-index:3}
+.g-bar.g-moving{box-shadow:0 0 0 2px #6D5DF6,0 4px 12px rgba(109,93,246,.35)}
+body.g-dragging,body.g-dragging *{cursor:ew-resize!important;user-select:none!important}
+.g-dragtip{position:fixed;transform:translate(-50%,-100%);z-index:10001;pointer-events:none;background:#0F2747;color:#fff;font-size:12px;font-weight:600;padding:5px 10px;border-radius:999px;white-space:nowrap;box-shadow:0 6px 18px rgba(15,39,71,.3)}
+.g-tools{position:fixed;right:24px;top:80px;z-index:60;display:flex;flex-direction:column;align-items:flex-end;gap:8px;opacity:0;pointer-events:none;transform:translateY(-6px);transition:opacity .2s,transform .2s}
+.g-tools.show{opacity:1;pointer-events:auto;transform:none}
+.g-tools .g-mode{height:40px;box-shadow:0 6px 18px rgba(15,39,71,.18)}
+.g-tools-in{display:flex;flex-direction:column;align-items:stretch;gap:6px;background:#fff;border:1px solid #D9D3FB;border-radius:16px;padding:10px;box-shadow:0 10px 28px rgba(15,39,71,.18);min-width:200px}
+.g-tools-in .g-selinfo{text-align:center;padding:2px 0 4px}
+.g-undo[disabled]{opacity:.45;cursor:default}
+.g-undo small{display:block;margin:2px 0 0!important}
+.g-exit{border:0;background:#F1F4F9;color:#5B6B82;border-radius:999px;padding:6px 14px;font:inherit;font-size:12.5px;cursor:pointer}
+.g-exit:hover{background:#E4EAF2}
+.g-mode{border:1px solid #C3CEDC;background:#fff;color:#0F2747;border-radius:999px;padding:7px 16px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
+.g-mode:hover{border-color:#6D5DF6;color:#4C3FD0}
+.g-mode.on{background:#6D5DF6;border-color:#6D5DF6;color:#fff;box-shadow:0 4px 12px rgba(109,93,246,.35)}
+.g-selinfo{font-size:12.5px;color:#4C3FD0;font-weight:700}
+.g-clr,.g-undo{border:1px solid #D9D3FB;background:#fff;color:#4C3FD0;border-radius:999px;padding:6px 14px;font:inherit;font-size:12.5px;cursor:pointer}
+.g-clr:hover,.g-undo:hover{background:#F4F2FF}
+.g-undo small{margin-left:8px;color:#7C8AA0;font-size:11px}
+.gantt.editing .g-track{background:repeating-linear-gradient(90deg,transparent 0,transparent 23px,rgba(109,93,246,.04) 23px,rgba(109,93,246,.04) 24px)}
+.g-bar.g-sel{box-shadow:0 0 0 2px #6D5DF6}
+.g-bar.g-selA{box-shadow:0 0 0 3px #0F2747,0 0 0 5px rgba(109,93,246,.45)}
 .g-row.k-out .g-label{color:var(--out)}
 .g-row.done .g-label .nm{color:#6B7885}
 .g-tag{flex:none;font-size:10px;padding:0 6px;border-radius:8px;color:#fff;line-height:16px}
@@ -819,12 +844,101 @@ header.bar .hbtn.primary:hover{background:#E8EEF7}
 header.bar .savestate,header.bar .syncstate{color:#7EE2A8}header.bar .syncstate.off{color:#A9B8CE}header.bar .syncstate.wait{color:#FFC978}
 header.bar .savestate.ng,header.bar .syncstate.ng{color:#FF9DA8}
 .bkgrp .bk-note{color:#A9B8CE}
+
+/* ---------- AI（Claude） ---------- */
+.ai-hbtn{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#7C6EF8,#5B4CE0)!important;border-color:transparent!important;color:#fff!important;font-weight:700;position:relative;box-shadow:0 4px 14px rgba(109,93,246,.45)}
+.ai-hbtn:hover{filter:brightness(1.08)}
+.ai-badge{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;border-radius:9px;background:#F59E0B;color:#0F2747;font-size:11px;font-weight:800;line-height:18px;text-align:center;padding:0 5px;box-shadow:0 0 0 2px #0F2747}
+.ai-usebtn{display:inline-flex;align-items:center;gap:8px;padding:2px 14px 2px 3px!important}
+.ai-usebtn .ai-t{display:flex;flex-direction:column;line-height:1.2;text-align:left}
+.ai-usebtn .ai-t b{font-size:12px;font-weight:700}.ai-usebtn .ai-t small{font-size:10.5px;opacity:.85;white-space:nowrap}
+.ai-usebtn.ng .ai-t small{color:#FFB4AE;font-weight:700}
+.ai-hgrp{display:inline-flex;align-items:center;gap:8px;margin-left:18px}
+.legend .lg-ai{margin-left:auto;display:inline-flex;gap:6px}
+.legend .lg-ai button{border:1px solid #D9D3FB;background:#F4F2FF;color:#4C3FD0;border-radius:999px;padding:5px 12px;font:inherit;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s}
+.legend .lg-ai button:hover{background:#6D5DF6;color:#fff;border-color:#6D5DF6}
+body.viewmode .legend .lg-ai{display:inline-flex}
+body.ai-open main,body.ai-open .titleblock,body.ai-open nav.tabs{margin-right:480px}
+.ai-panel{position:fixed;top:0;right:0;bottom:0;width:470px;max-width:100vw;background:#fff;border-left:1px solid #DCE3EC;box-shadow:-14px 0 36px rgba(15,39,71,.14);z-index:95;display:flex;flex-direction:column;animation:aiIn .35s var(--ease) both}
+.ai-panel[hidden]{display:none}
+@keyframes aiIn{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}
+.ai-head{display:flex;align-items:center;gap:8px;padding:14px 16px 10px;background:#0F2747;color:#fff}
+.ai-head b{font-size:16px;flex:1}
+.ai-logo{width:28px;height:28px;border-radius:9px;background:#6D5DF6;display:flex;align-items:center;justify-content:center}
+.ai-user{display:flex;align-items:center;gap:6px;font-size:11.5px;color:#A9B8CE}
+.ai-user input{width:110px;border:0;border-radius:999px;padding:5px 10px;font:inherit;font-size:12.5px}
+.ai-x{border:0;background:rgba(255,255,255,.14);color:#fff;width:30px;height:30px;border-radius:50%;font-size:16px;cursor:pointer}
+.ai-tabs{display:flex;gap:2px;margin:10px 16px 0;padding:3px;background:#E4EAF2;border-radius:999px}
+.ai-tabs button{flex:1;border:0;background:transparent;border-radius:999px;padding:6px 10px;font:inherit;font-size:13px;color:#5B6B82;cursor:pointer}
+.ai-tabs button.on{background:#fff;color:#0F2747;font-weight:700;box-shadow:0 1px 3px rgba(15,39,71,.1)}
+.ai-cnt{display:inline-block;margin-left:6px;background:#F59E0B;color:#0F2747;border-radius:9px;padding:0 6px;font-size:11px;font-weight:800}
+.ai-scope{display:flex;align-items:center;gap:6px;margin:10px 16px 0}
+.ai-scope button{border:1px solid #DCE3EC;background:#fff;border-radius:999px;padding:4px 12px;font:inherit;font-size:12px;color:#5B6B82;cursor:pointer}
+.ai-scope button.on{background:#0F2747;border-color:#0F2747;color:#fff}
+.ai-scope button[disabled]{opacity:.45;cursor:default}
+.ai-scope .ai-clear{margin-left:auto;border:0;background:transparent;color:#8D9AAE;text-decoration:underline}
+.ai-undo{margin:8px 16px 0}.ai-undo button{width:100%;border:1px solid #D9D3FB;background:#F4F2FF;color:#4C3FD0;border-radius:999px;padding:6px 12px;font:inherit;font-size:12.5px;font-weight:700;cursor:pointer}
+.ai-body{flex:1;min-height:0;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:12px;background:#F7F9FC;margin-top:10px;border-top:1px solid #E8EDF3}
+.ai-msg{max-width:92%;font-size:13px;line-height:1.7;border-radius:16px;padding:10px 14px;word-break:break-word}
+.ai-msg.me{align-self:flex-end;background:#0F2747;color:#fff;border-bottom-right-radius:4px}
+.ai-msg.ai{align-self:flex-start;background:#fff;border:1px solid #DCE3EC;border-bottom-left-radius:4px;max-width:100%}
+.ai-msg.err{border-color:#F4B4BC;background:#FDF2F4;color:#B4233A}
+.ai-msg p{margin:0 0 6px}.ai-msg ul{margin:0 0 6px;padding-left:20px}.ai-msg h4{margin:8px 0 4px;font-size:13.5px;color:#0F2747}
+.ai-msg code{background:#F1F4F9;border-radius:4px;padding:0 4px}
+.ai-mdt{border-collapse:collapse;margin:4px 0 8px;font-size:12px}.ai-mdt th,.ai-mdt td{border:1px solid #DCE3EC;padding:3px 6px}.ai-mdt th{background:#F1F4F9}
+.ai-msg.busy{display:flex;align-items:center;gap:10px;color:#5B6B82}
+.dots{display:inline-flex;gap:4px}.dots i{width:7px;height:7px;border-radius:50%;background:#6D5DF6;animation:aiDot 1s infinite ease-in-out}.dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}
+@keyframes aiDot{0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1);opacity:1}}
+.ai-use{margin-top:6px;font-size:10.5px;color:#8D9AAE}
+.ai-empty{margin:auto 0;text-align:center;color:#5B6B82;font-size:13px;padding:20px}.ai-empty b{display:block;color:#0F2747;margin-bottom:6px}
+.ai-ops{margin-top:8px;border:1.5px solid #6D5DF6;border-radius:14px;overflow:hidden;background:#fff}
+.ai-ops-h{background:#F4F2FF;padding:8px 12px;display:flex;flex-direction:column;gap:2px}.ai-ops-h b{color:#4C3FD0;font-size:13px}.ai-ops-h span{font-size:12px;color:#5B6B82}
+.ai-op{display:flex;gap:8px;padding:8px 12px;border-top:1px solid #E8EDF3;font-size:12.5px;cursor:pointer;align-items:flex-start}
+.ai-op input{margin-top:3px;accent-color:#6D5DF6}
+.ai-op span{display:flex;flex-direction:column;gap:2px}.ai-op em{font-style:normal;font-size:11px;color:#4C3FD0;font-weight:700}
+.ai-op small{color:#5B6B82;font-size:11.5px}.ai-op small.cf{color:#B45309;font-weight:700}
+.ai-op.conflict{background:#FFF8EE}.ai-op.add{background:#F3FBF6}
+.ai-ops-act{display:flex;gap:8px;padding:10px 12px;border-top:1px solid #E8EDF3}
+.ai-primary{flex:1;border:0;background:#0F2747;color:#fff;border-radius:999px;padding:9px 14px;font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.ai-primary[disabled]{opacity:.45;cursor:default}
+.ai-sec{border:1px solid #DCE3EC;background:#fff;color:#0F2747;border-radius:999px;padding:9px 16px;font:inherit;font-size:13px;cursor:pointer}
+.ai-ops-done{padding:9px 12px;border-top:1px solid #E8EDF3;font-size:12.5px;font-weight:700;color:#15803D;background:#EEFBF2}.ai-ops-done.skip{color:#5B6B82;background:#F1F4F9}
+.ai-ops-hint{padding:0 12px 10px;font-size:11px;color:#5B6B82}
+.ai-note-l{display:flex;flex-direction:column;gap:4px;padding:8px 12px 0;font-size:11px;color:#5B6B82;border-top:1px solid #E8EDF3}
+.ai-note{border:1px solid #DCE3EC;border-radius:10px;padding:7px 10px;font:inherit;font-size:12.5px}
+.ai-foot{padding:10px 16px 14px;border-top:1px solid #E8EDF3;background:#fff}
+.ai-quick{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.ai-quick button{border:1px solid #D9D3FB;background:#F4F2FF;color:#4C3FD0;border-radius:999px;padding:5px 11px;font:inherit;font-size:12px;font-weight:700;cursor:pointer}
+.ai-quick button.chip{background:#fff;border-color:#DCE3EC;color:#1E3A64;font-weight:400}
+.ai-input{display:flex;gap:8px;align-items:flex-end}
+.ai-input textarea{flex:1;resize:vertical;min-height:44px;max-height:180px;border:1px solid #DCE3EC;border-radius:14px;padding:10px 12px;font:inherit;font-size:13px}
+.ai-input textarea:focus{outline:0;border-color:#6D5DF6;box-shadow:0 0 0 3px rgba(109,93,246,.15)}
+.ai-input .ai-primary{flex:none;padding:12px 18px}
+.ai-prop{display:flex;flex-direction:column;gap:3px;text-align:left;border:1px solid #DCE3EC;background:#fff;border-radius:14px;padding:10px 14px;font:inherit;cursor:pointer;box-shadow:0 1px 3px rgba(15,39,71,.05)}
+.ai-prop:hover{border-color:#6D5DF6}.ai-prop b{font-size:13.5px;color:#0F2747}.ai-prop span{font-size:12px;color:#5B6B82}.ai-prop small{font-size:12px;color:#8A5A00;background:#FFF8EE;border-radius:8px;padding:4px 8px;margin-top:4px}
+.ai-prop-h{display:flex;flex-direction:column;gap:3px}.ai-prop-h b{font-size:14px}.ai-prop-h span{font-size:12px;color:#5B6B82}
+.ai-pnote{margin-top:4px;background:#FFF8EE;border:1px solid #F5D9A8;border-radius:10px;padding:8px 10px;font-size:12.5px;color:#8A5A00}
+.ai-sep{text-align:center;font-size:11px;color:#8D9AAE}
+.ai-tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.ai-tbl th,.ai-tbl td{border-bottom:1px solid #E8EDF3;padding:6px 8px;text-align:left;vertical-align:top}
+.ai-tbl th{background:#F7F9FC;color:#5B6B82;font-weight:600;font-size:11.5px}
+.ai-tbl .v{text-align:right;white-space:nowrap}.ai-tbl .c{text-align:center}.ai-tbl .yen{color:#4C3FD0;font-weight:700}
+.ai-tbl small{display:block;color:#8D9AAE;font-size:10.5px;font-weight:400}.ai-tbl tr.me td{background:#F4F2FF}.ai-tbl tfoot td{font-weight:700;background:#F7F9FC}
+.ai-st{display:inline-block;border-radius:999px;padding:1px 8px;font-size:11.5px;font-weight:700}.ai-st.ok{background:#EEFBF2;color:#15803D}.ai-st.wait{background:#FFF8EE;color:#B45309}.ai-st.part{background:#F1F4F9;color:#5B6B82}
+.ai-vhead{display:flex;align-items:center;gap:12px;margin:6px 0 14px}.ai-vhead h2{margin:0;flex:1}
+.ai-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(420px,1fr));gap:16px}
+.ai-card h3{margin:0 0 10px;font-size:15px}.ai-card h3 small{font-weight:400;color:#7C8AA0;font-size:12px}
+.ai-lim{display:flex;gap:18px;align-items:center}.ai-big{font-size:26px;font-weight:300;letter-spacing:-.02em}.ai-big small{font-size:12px;color:#5B6B82}
+.model-pill{display:inline-block;font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:6px;background:#F4F2FF;color:#4C3FD0}
+@media (max-width:1100px){body.ai-open main,body.ai-open .titleblock,body.ai-open nav.tabs{margin-right:0}}
 </style>
 </head>
 <body>
 <header class="bar">
   <div class="hgrp">
   <h1>個人用工程請求管理</h1>
+  <span class="ai-hgrp"><button class="hbtn ai-hbtn" id="btnAi" type="button" title="AI（Claude）に工程・売上・単価を相談します"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.6L18 9.5l-4.2 1.9L12 16l-1.8-4.6L6 9.5l4.2-1.9z"/></svg>AI相談<span class="ai-badge" id="aiBadge" hidden></span></button>
+  <button class="hbtn ai-usebtn" id="btnAiUse" type="button" title="AI・API関連"><span id="aiPie"></span><span class="ai-t"><b>AI・API関連</b><small id="aiSub">—</small></span></button></span>
   </div>
   <div class="hgrp right">
   <span class="savestate" id="saveState" title="入力した内容は、このブラウザに自動で保存されます。保存ボタンを押す必要はありません。">● 自動保存 ON</span>
@@ -866,7 +980,7 @@ header.bar .savestate.ng,header.bar .syncstate.ng{color:#FF9DA8}
 </nav>
 
 <main>
-  <div class="legend" id="legend" aria-label="欄の見分け方"><span><i class="sw in"></i>クリーム色の欄＝入力する</span><span><i class="sw auto"></i>白い欄＝自動で入る（入力不要）</span><span><i class="sw tot"></i>灰色の行＝合計（自動）</span><span class="autosave">入力は自動で保存されます。保存ボタンを押す必要はありません。</span></div>
+  <div class="legend" id="legend" aria-label="欄の見分け方"><span><i class="sw in"></i>クリーム色の欄＝入力する</span><span><i class="sw auto"></i>白い欄＝自動で入る（入力不要）</span><span><i class="sw tot"></i>灰色の行＝合計（自動）</span><span class="autosave">入力は自動で保存されます。保存ボタンを押す必要はありません。</span><span class="lg-ai"><button type="button" data-aireview="review_kotei" title="この案件の工程をAIが点検し、問題点と改善案を出します">工程見直し（AI）</button><button type="button" data-aireview="review_kingaku" title="この案件の金額・単価をAIが点検し、問題点と改善案を出します">金額見直し（AI）</button></span></div>
   <section class="view" id="v-home"></section>
   <section class="view" id="v-overview"></section>
   <section class="view" id="v-input"></section>
@@ -874,7 +988,9 @@ header.bar .savestate.ng,header.bar .syncstate.ng{color:#FF9DA8}
   <section class="view" id="v-kotei"></section>
   <section class="view" id="v-seikyu"></section>
   <section class="view" id="v-graph"></section>
+  <section class="view" id="v-ai"></section>
 </main>
+<aside class="ai-panel" id="aiPanel" hidden aria-label="AI相談"></aside>
 <dialog id="sheetDlg" aria-label="スプレッドシートから開く">
   <div class="pv-head"><h3>スプレッドシートから案件を開く</h3><span class="spacer"></span><button class="hbtn" id="sheetDlgClose">閉じる</button></div>
   <div class="sheet-body" id="sheetList"></div>
@@ -1647,12 +1763,14 @@ function renderGantt(D){
       const tip = `${it.name}　${dayStr(a)}〜${dayStr(b)}${done ? "（完了）" : isNum(prg) ? "（進捗 " + Math.round(prg * 100) + "%）" : ""}`;
       const who = whoLabel(it, baseWho);
       // バーの左：作業者（基本データと違う場合・2人のときのみ）→ 開始日（左から この順）
-      bar += `<span class="g-lead" style="right:calc(${(100 - pn(a)).toFixed(3)}% + 4px)">${who ? `<span class="g-who" title="作業者">${esc(who)}</span>` : ""}<span class="g-start" title="開始日">${md(s)}</span></span>`;
-      bar += `<div class="g-bar${done ? " done" : ""}${late ? " late" : ""}" style="left:${pct(a)};width:${((b - a + 1) * k).toFixed(3)}%" title="${esc(tip)}"><i style="width:${fill}%"></i></div>`;
+      const dg = !VIEW_MODE && gEdit && !done;   // 工程編集モードのとき、未完了のバーだけ選択・ドラッグできる
+      const sc = gSel && gSel.ids.includes(it.id) ? (gSel.anchor === it.id ? " g-selA" : " g-sel") : "";
+      bar += `<span class="g-lead" data-gm="${it.id}" style="right:calc(${(100 - pn(a)).toFixed(3)}% + 4px)">${who ? `<span class="g-who" title="作業者">${esc(who)}</span>` : ""}<span class="g-start" title="開始日">${md(s)}</span></span>`;
+      bar += `<div class="g-bar${done ? " done" : ""}${late ? " late" : ""}${dg ? " drag" + sc : ""}" data-gm="${it.id}"${dg ? ` data-gbar="${it.id}" data-s0="${dayIso(s)}" data-e0="${dayIso(e)}"` : ""} style="left:${pct(a)};width:${((b - a + 1) * k).toFixed(3)}%" title="${esc(tip)}${dg ? "\nクリック：この項目と連動する項目を選択／Shift+クリック：連動から外す・戻す／ドラッグ：選択中の項目をまとめて1日単位でずらす" : ""}"><i style="width:${fill}%"></i></div>`;
       // バーの右：完了予定日（○/○）
-      bar += `<span class="g-end${done ? " done" : late ? " late" : ""}" style="left:${pct(b + 1)}" title="完了予定日と進捗">${md(e)}${isNum(prg) ? `<span class="g-prg">進捗 ${Math.round(prg * 100)}%</span>` : ""}</span>`;
+      bar += `<span class="g-end${done ? " done" : late ? " late" : ""}" data-gm="${it.id}" style="left:${pct(b + 1)}" title="完了予定日と進捗">${md(e)}${isNum(prg) ? `<span class="g-prg">進捗 ${Math.round(prg * 100)}%</span>` : ""}</span>`;
     }
-    return `<div class="g-row${done ? " done" : ""}${late ? " late" : ""}"><div class="g-label"><span class="n">${D.V["no-" + it.id]}</span><span class="nm" title="${esc(it.name)}">${esc(it.name)}</span>${tag}</div><div class="g-track">${bar}</div></div>`;
+    return `<div class="g-row${done ? " done" : ""}${late ? " late" : ""}" data-grow="${it.id}"><div class="g-label"><span class="n">${D.V["no-" + it.id]}</span><span class="nm" title="${esc(it.name)}">${esc(it.name)}</span>${tag}</div><div class="g-track">${bar}</div></div>`;
   }).join("");
   const bands = months.filter(mo => mo.alt).map(mo => `<div class="g-band" style="left:${pct(mo.a)};width:${((mo.b - mo.a + 1) * k).toFixed(3)}%"></div>`).join("");
   const grid = bands + months.map(mo => `<div class="g-grid" style="left:${pct(mo.a)}"></div>`).join("") + marks.map(m => `<div class="g-line d${m.dd}" style="left:${pct(m.n + 0.5)}"></div>`).join("");
@@ -1662,8 +1780,9 @@ function renderGantt(D){
       <span><i style="background:#8A96A8"></i>完了</span><span><i style="outline:2px solid #F08C00;background:#fff"></i>遅れ（完了予定日を過ぎて未完了）</span><span>バーの左＝（作業者・）開始日、右＝<b style="font-size:11px;color:#0F2747">完了予定日</b>（過ぎて未完了はオレンジ、完了はグレー）</span>
       <span><i style="width:0;height:12px;border-left:1px dotted #9FB0C2;border-radius:0;background:none"></i>10日・20日の目印（20日＝請求の締め日）</span>
       <span><i style="width:2px;background:#F08C00"></i>今日（${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()}）</span>
+      ${VIEW_MODE ? "" : gEdit ? `<span style="color:#4C3FD0;font-weight:700">工程編集モード：バーをクリック＝その項目と連動項目（未完了・同じ作業者・その項目の開始日以降に始まる項目）を選択／Shift+クリック＝連動から外す・戻す／ドラッグ＝選択中をまとめてずらす／Esc＝選択解除</span>` : ""}
       ${inRange ? "" : `<span style="color:#F08C00;font-weight:700">今日は工程表の期間外です</span>`}</div>`;
-  box.innerHTML = `${legendHtml}<div class="gscroll"><div class="gantt">${head}${body}<div class="g-over">${grid}${tLine}</div></div></div>`;
+  box.innerHTML = `${legendHtml}<div class="gscroll"><div class="gantt${gEdit ? " editing" : ""}" data-gk="${k}">${head}${body}<div class="g-over">${grid}${tLine}</div></div></div>`;
   const sc = box.querySelector(".gscroll");
   if(sc){
     if(keepLeft !== null) sc.scrollLeft = keepLeft;
@@ -1673,7 +1792,162 @@ function renderGantt(D){
     }
   }
   setTimeout(() => { if(typeof updateHBar === "function") updateHBar(); }, 0);
+  if(typeof gToolbar === "function") gToolbar();
 }
+
+/* ============================================================
+   工程表（集計タブ）：工程編集モード
+   ・「工程編集モードにする」を押したときだけ、バーを選択・ドラッグできる
+   ・バーをクリック：その項目と、連動する項目（後ろの未完了の項目のうち、作業者が同じもの）を選択する
+   ・Shift+クリック：選択中の項目を連動から外す（もう一度で戻す）
+   ・ドラッグ：選択中の項目をまとめて1日単位でずらす（作業開始日・完了予定日）。Esc で取り消し／選択解除
+   ・「元に戻す」（Ctrl+Z）で、ずらす前の日付に戻す（何回でも）
+   ============================================================ */
+let gEdit = false, gSel = null, gUndo = [], gDrag = null;
+const dayIso = n => { const d = new Date(n * 86400000); return isoOf(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate()); };
+const isoAdd = (iso, n) => { const [y, m, d] = iso.split("-").map(Number), dt = new Date(Date.UTC(y, m - 1, d + n)); return isoOf(dt.getUTCFullYear(), dt.getUTCMonth() + 1, dt.getUTCDate()); };
+const workerOf = (it, info) => String(it.worker || (info || P().info).worker || "").trim();   // 項目の作業者（空欄なら基本データの作業者）
+// 連動する項目：名前があり未完了で、作業者が同じで、開始日も完了予定日も「起点の項目の開始日」以降の項目（一覧の順は問わない）
+//   起点より早く開始する項目・起点の開始日より前に終わる項目は連動しない
+function linkedIds(id, startIso){
+  const p = P(), info = p.info, base = p.items.find(x => x.id === id); if(!base) return [];
+  const w = workerOf(base, info), s0 = dateNo(startIso || base.workStart || info.startDate);
+  return p.items.filter(it => {
+    if(it.id === id || !String(it.name || "").trim() || it.done) return false;
+    if(workerOf(it, info) !== w) return false;
+    const st = dateNo(it.workStart || info.startDate), e = dateNo(it.due || info.endDate);
+    return s0 === null || (st !== null && st >= s0 && e !== null && e >= s0);
+  }).map(it => it.id);
+}
+const gLinked = id => linkedIds(id);
+function gSelect(id, full = true){ gSel = {anchor:id, ids:[id, ...gLinked(id)]}; gPaintSel(full); }
+// 選択の色付け。full のときは工程表を描き直して、上の「選択中 ○項目」「選択を解除」も更新する（ドラッグ開始の直前は描き直さない）
+function gPaintSel(full = true){
+  if(full) gToolbar();
+  $$("#gantt .g-bar").forEach(el => { const id = el.dataset.gm; el.classList.toggle("g-selA", !!gSel && gSel.anchor === id); el.classList.toggle("g-sel", !!gSel && gSel.anchor !== id && gSel.ids.includes(id)); });
+}
+function gPreview(dd){
+  if(!gDrag) return;
+  const px = dd * gDrag.dayPx;
+  gDrag.els.forEach(el => { el.style.transform = dd ? `translateX(${px}px)` : ""; });
+  const t = gDrag.tip;
+  t.textContent = dd ? `${dd > 0 ? "+" : ""}${dd}日　${md(dateNo(gDrag.s0) + dd)}〜${md(dateNo(gDrag.e0) + dd)}${gDrag.ids.length > 1 ? `（ほか ${gDrag.ids.length - 1} 項目も）` : ""}` : `ドラッグでずらす（選択中 ${gDrag.ids.length} 項目）`;
+  const r = gDrag.bar.getBoundingClientRect();
+  t.style.left = (r.left + r.width / 2) + "px"; t.style.top = (r.top - 8) + "px";
+}
+function gPushUndo(label){
+  const p = P();
+  gUndo.push({pid:p.id, label, dates:p.items.map(x => ({id:x.id, workStart:x.workStart, due:x.due}))});
+  if(gUndo.length > 30) gUndo.shift();
+}
+function gUndoLast(){
+  const p = P(); let k = -1; for(let i = gUndo.length - 1; i >= 0; i--) if(gUndo[i].pid === p.id){ k = i; break; }
+  if(k < 0){ toast("元に戻せる操作はありません"); return; }
+  const u = gUndo.splice(k, 1)[0];
+  u.dates.forEach(d => { const it = itemById(d.id); if(it){ it.workStart = d.workStart; it.due = d.due; } });
+  toast(`元に戻しました（${u.label}）`);
+  save(); if(RENDER.kotei) RENDER.kotei(); refresh();
+}
+function gEnd(commit){
+  const g = gDrag; if(!g) return; gDrag = null;
+  document.body.classList.remove("g-dragging");
+  g.tip.remove(); g.els.forEach(el => { el.style.transform = ""; el.classList.remove("g-moving"); });
+  if(!commit || !g.dd){ gToolbar(); return; }   // クリックだけ（ずらしていない）なら、右上の「選択中 ○項目」を更新するだけ
+  const p = P(), info = p.info, base = itemById(g.id); if(!base) return;
+  gPushUndo(`${base.name}${g.ids.length > 1 ? ` ほか${g.ids.length - 1}項目` : ""} ${g.dd > 0 ? "+" : ""}${g.dd}日`);
+  g.ids.forEach(id => {
+    const it = itemById(id); if(!it) return;
+    const s0 = it.workStart || info.startDate, e0 = it.due || info.endDate;
+    if(s0) it.workStart = isoAdd(s0, g.dd);
+    if(e0) it.due = isoAdd(e0, g.dd);
+  });
+  toast(`${base.name}${g.ids.length > 1 ? ` ほか ${g.ids.length - 1} 項目` : ""} を ${g.dd > 0 ? "+" : ""}${g.dd}日ずらしました（元に戻す：Ctrl+Z）`);
+  save(); if(RENDER.kotei) RENDER.kotei(); refresh();
+}
+document.addEventListener("pointerdown", e => {
+  const bar = e.target.closest && e.target.closest(".g-bar[data-gbar]");
+  if(!bar || VIEW_MODE || !gEdit || e.button !== 0) return;
+  const gantt = bar.closest(".gantt"), track = bar.closest(".g-track"); if(!gantt || !track) return;
+  e.preventDefault();
+  const id = bar.dataset.gbar;
+  if(e.shiftKey){                                       // Shift+クリック：連動から外す・戻す
+    if(!gSel){ gSelect(id); return; }
+    if(gSel.anchor === id){ toast("起点の項目は外せません（別の項目をクリックすると選び直せます）"); return; }
+    gSel.ids = gSel.ids.includes(id) ? gSel.ids.filter(x => x !== id) : [...gSel.ids, id];
+    gPaintSel(); return;
+  }
+  if(!gSel || !gSel.ids.includes(id)) gSelect(id, false);       // 選択していないバーを押したら、その項目と連動項目を選び直す
+  const ids = gSel.ids.slice();
+  const els = []; ids.forEach(x => gantt.querySelectorAll(`[data-gm="${x}"]`).forEach(el => { el.classList.add("g-moving"); els.push(el); }));
+  const tip = document.createElement("div"); tip.className = "g-dragtip"; document.body.appendChild(tip);
+  gDrag = {id, ids, bar, els, tip, x0:e.clientX, dd:0, s0:bar.dataset.s0, e0:bar.dataset.e0,
+           dayPx: track.getBoundingClientRect().width * Number(gantt.dataset.gk) / 100};
+  try{ bar.setPointerCapture(e.pointerId); }catch(_){}
+  document.body.classList.add("g-dragging");
+  gPreview(0);
+});
+document.addEventListener("pointermove", e => {
+  if(!gDrag) return;
+  const dd = Math.round((e.clientX - gDrag.x0) / (gDrag.dayPx || 1));
+  if(dd !== gDrag.dd){ gDrag.dd = dd; gPreview(dd); }
+});
+document.addEventListener("pointerup", () => { if(gDrag) gEnd(true); });
+document.addEventListener("pointercancel", () => { if(gDrag) gEnd(false); });
+document.addEventListener("keydown", e => {
+  if(gDrag && e.key === "Escape"){ e.preventDefault(); gEnd(false); toast("ドラッグを取り消しました"); return; }
+  if(!gEdit || VIEW_MODE) return;
+  const t = e.target, typing = t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT" || t.isContentEditable);
+  if(e.key === "Escape" && gSel && !typing){ gSel = null; gPaintSel(); return; }
+  if((e.ctrlKey || e.metaKey) && !e.shiftKey && (e.key === "z" || e.key === "Z") && !typing){ e.preventDefault(); gUndoLast(); }
+});
+document.addEventListener("click", e => {
+  const t = e.target.closest && e.target.closest("[data-gundo],[data-gmode],[data-gclr]"); if(!t || VIEW_MODE) return;
+  if(t.dataset.gundo){ gUndoLast(); return; }
+  if(t.dataset.gclr){ gSel = null; gPaintSel(); return; }
+  if(t.dataset.gmode){ gEdit = !gEdit; if(!gEdit) gSel = null; renderGantt(derive(P())); toast(gEdit ? "工程編集モード：バーをクリックして選び、ドラッグでずらせます" : "工程編集モードを終了しました"); }
+});
+
+// 右上に固定する「工程編集モード」の操作パネル（工程表が画面に見えている間だけ表示）。元に戻すはモード中だけ、この中に出す
+let gToolsVisible = false, gObs = null;
+function gToolbar(){
+  if(VIEW_MODE) return;
+  let el = document.getElementById("gTools");
+  if(!el){ el = document.createElement("div"); el.id = "gTools"; el.className = "g-tools"; document.body.appendChild(el); }
+  const box = $("#gantt");
+  if(box && typeof IntersectionObserver === "function" && (!gObs || gObs._box !== box)){
+    if(gObs) gObs.disconnect();
+    gObs = new IntersectionObserver(es => { gToolsVisible = es.some(x => x.isIntersecting); gToolPos(); }, {threshold:0});
+    gObs._box = box; gObs.observe(box);
+  }
+  const p = P(), undos = gUndo.filter(u => u.pid === p.id), last = undos[undos.length - 1];
+  el.innerHTML = `<button type="button" class="g-mode${gEdit ? " on" : ""}" data-gmode="1" aria-pressed="${gEdit}">${gEdit ? "工程編集モード：ON" : "工程編集モード"}</button>
+    ${gEdit ? `<div class="g-tools-in">
+      <span class="g-selinfo">${gSel ? `選択中 ${gSel.ids.length} 項目` : "バーをクリックして選択"}</span>
+      ${gSel ? `<button type="button" class="g-clr" data-gclr="1">選択を解除</button>` : ""}
+      <button type="button" class="g-undo" data-gundo="1"${last ? "" : " disabled"} title="Ctrl+Z でも戻せます">↶ 元に戻す${last ? `<small>${esc(last.label)}${undos.length > 1 ? `（あと ${undos.length} 回）` : ""}</small>` : ""}</button>
+      <button type="button" class="g-exit" data-gmode="1">終了</button>
+    </div>` : ""}`;
+  gToolPos();
+}
+function gToolPos(){
+  const el = document.getElementById("gTools"); if(!el) return;
+  // 出すタイミング：工程表の枠の上端が、画面上部（タブのすぐ下）まで来たとき。消すタイミング：工程表の下端が見えなくなったとき
+  const box = $("#gantt"), card = box && (box.closest(".chart") || box);
+  const navB = (() => { const n = document.querySelector("nav.tabs"); return n ? Math.max(0, n.getBoundingClientRect().bottom) : 0; })();
+  let shown = false;
+  if(box && box.offsetParent !== null){ const cr = card.getBoundingClientRect(), br = box.getBoundingClientRect(); shown = cr.top <= navB + 120 && br.bottom > navB; }
+  el.classList.toggle("show", shown);
+  // 右上の「グラフの再表示」ボタンと重ならないよう、その左に並べる
+  const rb = document.querySelector("#v-graph .chartbar > .hbtn"), rr = rb && rb.offsetParent !== null ? rb.getBoundingClientRect() : null;
+  const nav = document.querySelector("nav.tabs"), top = nav ? Math.max(0, nav.getBoundingClientRect().bottom) : 0;
+  if(rr && rr.width){
+    el.style.right = Math.round(window.innerWidth - rr.left + 12) + "px";
+    el.style.top = Math.round(rr.top + (rr.height - 40) / 2) + "px";
+  }else{ el.style.right = "24px"; el.style.top = (top + 10) + "px"; }
+}
+window.addEventListener("scroll", gToolPos, {passive:true});
+window.addEventListener("resize", gToolPos);
+document.addEventListener("click", e => { if(e.target.closest && e.target.closest("[data-tab]")) setTimeout(gToolPos, 50); });
 
 /* ============================================================
    グラフ
@@ -2131,17 +2405,17 @@ document.addEventListener("keydown", e => {
   const tr = e.target.closest && e.target.closest("tr[data-open]");
   if(tr && (e.key === "Enter" || e.key === " ")){ e.preventDefault(); tr.click(); }
 });
-const RENDER = {overview:() => renderOverview(), home:() => VIEW_MODE ? renderHomeView() : renderHome(), input:renderInput, est:renderEst, kotei:renderKotei, seikyu:renderSeikyu, graph:renderGraphShell};   // グラフは refresh() 後に描画（集計の数字を先に確実に出す）
+const RENDER = {overview:() => renderOverview(), home:() => VIEW_MODE ? renderHomeView() : renderHome(), input:renderInput, est:renderEst, kotei:renderKotei, seikyu:renderSeikyu, graph:renderGraphShell, ai:() => renderAiView()};   // グラフは refresh() 後に描画（集計の数字を先に確実に出す）
 function show(tab){
   if(!VIEW_MODE && tab === "overview") tab = "home";
   if(VIEW_MODE){
     if(tab === "input") tab = "est";
-    if(tab !== "home" && tab !== "overview" && !viewLoaded){ toast("ホームで案件を選んでください"); tab = "home"; }
+    if(tab !== "home" && tab !== "overview" && tab !== "ai" && !viewLoaded){ toast("ホームで案件を選んでください"); tab = "home"; }
   }
   currentTab = tab;
   $$("nav.tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === tab));
   $$("section.view").forEach(s => s.classList.toggle("on", s.id === "v-" + tab));
-  const plain = tab === "home" || tab === "overview";
+  const plain = tab === "home" || tab === "overview" || tab === "ai";
   $("#lvl2").hidden = plain;
   updateCrumb(tab);
   $("#tb").hidden = plain; $("#legend").hidden = plain;
@@ -2449,7 +2723,7 @@ function sheetEst(wb, p, D){
   const list = D.estList.slice(0, EST_ROWS); let tot = 0;
   list.forEach((it, k) => { const r = 16 + k;
     const lump = IS_LUMP(it), t = totalHrOf(it);
-    const amt = lump ? (isNum(it.lumpAmt) ? Number(it.lumpAmt) : null) : (isNum(t) ? t * D.rateOf(it) : null); tot += amt || 0;
+    const amt = (lump && isNum(it.lumpAmt)) ? Number(it.lumpAmt) : (isNum(t) ? t * D.rateOf(it) : null); tot += amt || 0;   // 「一式」でも合計時間が入っていれば「合計時間 × 単価」の金額を載せる（画面と同じ）
     ws.getCell("A"+r).value = it.group || null; ws.getCell("A"+r).alignment = {...(ws.getCell("A"+r).alignment||{}), horizontal:"center"};
     ws.getCell("B"+r).value = it.name; ws.getCell("C"+r).value = it.size || null; ws.getCell("D"+r).value = qtyVal(it.qty);
     ws.getCell("E"+r).value = lump ? null : nv(it.unitHr);
@@ -3023,21 +3297,24 @@ document.addEventListener("keydown", e => {
 document.addEventListener("compositionend", e => {
   const el = e.target; if(el.dataset && el.dataset.s === "item" && (el.dataset.k === "worker" || el.dataset.k === "worker2" || el.dataset.k === "ratio2")) el.dispatchEvent(new Event("input", {bubbles:true}));
 });
-// 日付のずらし：ずらした項目より後ろ（一覧の順）の、未完了の項目の作業開始日・完了予定日を、同じ日数だけ動かす
+// 日付のずらし：連動する項目（作業者が同じ・未完了・この項目の開始日以降に始まる項目）の作業開始日・完了予定日を、同じ日数だけ動かす
 function followShiftFrom(id, key, oldIso, newIso){
   if(!followShift || !oldIso || !newIso) return 0;
   const delta = dateNo(newIso) - dateNo(oldIso); if(!delta) return 0;
   const p = P(), info = p.info, add = (iso, n) => { const [y, m, d] = iso.split("-").map(Number), dt = new Date(Date.UTC(y, m - 1, d + n)); return isoOf(dt.getUTCFullYear(), dt.getUTCMonth() + 1, dt.getUTCDate()); };
   const idx = p.items.findIndex(x => x.id === id); if(idx < 0) return 0;
   let n = 0;
-  p.items.slice(idx + 1).forEach(it => {
-    if(!String(it.name || "").trim() || it.done) return;
+  // 連動する項目は、集計タブの工程編集モードと同じ（作業者が同じ・未完了・この項目の開始日〈ずらす前〉以降に始まる項目）
+  const self = p.items[idx], startOld = key === "workStart" ? oldIso : (self.workStart || info.startDate);
+  const ids = new Set(linkedIds(id, startOld));
+  p.items.forEach(it => {
+    if(!ids.has(it.id)) return;
     const s0 = it.workStart || info.startDate, e0 = it.due || info.endDate; let moved = false;
     if(s0){ it.workStart = add(s0, delta); moved = true; }
     if(e0){ it.due = add(e0, delta); moved = true; }
     if(moved) n++;
   });
-  if(n) toast(`以降の ${n} 項目も ${delta > 0 ? "+" : ""}${delta}日ずらしました`);
+  if(n) toast(`連動する ${n} 項目も ${delta > 0 ? "+" : ""}${delta}日ずらしました`);
   return n;
 }
 document.addEventListener("focusin", e => {      // ずらす前の日付を覚えておく
@@ -3428,12 +3705,534 @@ document.addEventListener("click", async e => {
 });
 
 /* ============================================================
+   AI（Claude）：相談・工程見直し・金額見直し・変更提案の適用・全体用→個人用の提案の受け渡し・使用量
+   ・通信はすべてGAS経由（APIキーはスプレッドシートの「各種設定」シートにだけあり、アプリには来ない）
+   ・モデル・単価・上限は「各種設定」シートで決める（アプリでは確認表示だけ）
+   ・AIの変更案は、変更前→変更後を見せて、人が選んでから［適用］する。適用後は［元に戻す］で戻せる
+   ============================================================ */
+const MODEL_NAMES = {"claude-fable-5-1":"Claude Fable 5.1", "claude-opus-5-5":"Claude Opus 5.5", "claude-sonnet-5-5":"Claude Sonnet 5.5", "claude-haiku-5-5":"Claude Haiku 5.5"};
+const modelName = m => MODEL_NAMES[m] || m || "";
+const AI_FIELDS = {
+  workStart:{label:"開始日", type:"date"}, due:{label:"完了予定日", type:"date"}, deadline:{label:"提出期限", type:"date"},
+  estHr:{label:"社内想定時間", type:"num", unit:"Hr"}, totalHr:{label:"見積の合計時間", type:"num", unit:"Hr"}, unitHr:{label:"単位時間", type:"num", unit:"Hr"},
+  qty:{label:"枚数", type:"qty"}, rate:{label:"単価", type:"num", unit:"円"}, lumpAmt:{label:"一式の金額", type:"num", unit:"円"},
+  kbn:{label:"区分", type:"kbn"}, done:{label:"完了", type:"bool"}, worker:{label:"作業者", type:"text"}
+};
+const AI_MFIELDS = {exp:"経費", sub:"外注"};
+const AI_TOOL = {
+  name:"propose_changes",
+  description:"アプリのデータに対する具体的な変更案を出す。アプリが変更前→変更後を表示し、人が確認して選んだものだけを適用する（このツールで直接は変わらない）。本当に必要な変更だけを出すこと。",
+  input_schema:{type:"object", properties:{
+    summary:{type:"string", description:"変更案全体の要約（1〜2文）"},
+    changes:{type:"array", items:{type:"object", properties:{
+      kind:{type:"string", enum:["set","shift","add_item","monthly"], description:"set=項目の値を変える／shift=開始日と完了予定日を days 日ずらす／add_item=作業項目を追加／monthly=月の経費・外注を変える"},
+      projectId:{type:"string", description:"対象の案件の projectId（データにある値）"},
+      itemId:{type:"string", description:"対象の作業項目の itemId（set・shift のとき）"},
+      field:{type:"string", description:"set: workStart/due/deadline/estHr/totalHr/unitHr/qty/rate/lumpAmt/kbn/done/worker。monthly: exp/sub"},
+      value:{type:"string", description:"変更後の値。日付は YYYY-MM-DD、数値も文字列で、done は true/false"},
+      days:{type:"integer", description:"shift でずらす日数（＋で後ろへ、−で前へ）"},
+      linked:{type:"boolean", description:"shift で連動項目（同じ作業者・未完了・その項目の開始日以降に始まる項目）も同じ日数ずらすか"},
+      month:{type:"string", description:"monthly の月（YYYY-MM）"},
+      item:{type:"object", description:"add_item の内容：name, kbn, qty, unitHr, totalHr, estHr, workStart, due, deadline, worker"},
+      reason:{type:"string", description:"この変更の理由（根拠の数字を含めて短く）"}
+    }, required:["kind","reason"]}}
+  }, required:["summary","changes"]}
+};
+let aiCfg = null, aiPanelOpen = false, aiBusy = false, aiPane = "chat", aiDraft = "", aiOpenProp = null;
+let aiScope = VIEW_MODE ? "all" : "one";
+const aiMsgs = {};            // 会話（案件ごと／全案件）。このブラウザを閉じるまで保持
+let aiInbox = [], aiSent = null, aiUndo = [], viewAll = null, viewAllAt = 0, aiPrevTab = "home";
+const aiUser = () => lsGet("ai_user") || (!VIEW_MODE && P() ? String(P().info.worker || "").trim() : "") || "";
+const aiYen = v => "¥" + (Number(v) || 0).toLocaleString("ja-JP", {maximumFractionDigits: (Number(v) || 0) < 10 ? 1 : 0});
+const aiUsd = v => "$" + (Number(v) || 0).toFixed(Number(v) < 1 ? 4 : 2);
+const aiN = v => (Number(v) || 0).toLocaleString("ja-JP");
+const aiToday = () => { const n = new Date(); return isoOf(n.getFullYear(), n.getMonth() + 1, n.getDate()); };
+
+/* ---------- 連動する項目（指定した案件で） ---------- */
+function linkedIdsIn(p, id, startIso){
+  const info = p.info, base = p.items.find(x => x.id === id); if(!base) return [];
+  const w = workerOf(base, info), s0 = dateNo(startIso || base.workStart || info.startDate);
+  return p.items.filter(it => {
+    if(it.id === id || !String(it.name || "").trim() || it.done) return false;
+    if(workerOf(it, info) !== w) return false;
+    const st = dateNo(it.workStart || info.startDate), e = dateNo(it.due || info.endDate);
+    return s0 === null || (st !== null && st >= s0 && e !== null && e >= s0);
+  }).map(it => it.id);
+}
+
+/* ---------- AIに渡すデータ（案件を要約したJSON） ---------- */
+function aiCompact(p){
+  const D = derive(p), V = D.V, info = p.info;
+  const r = v => (v === "" || v === null || v === undefined) ? null : isNum(v) ? Math.round(Number(v) * 100) / 100 : v;
+  return {projectId:p.id, 施設名:info.name || "", 客先:info.client || "", 作業者:info.worker || "", 標準単価:r(info.rate),
+    請求期間:{開始:info.startDate || "", 終了:info.endDate || ""},
+    合計:{見積合計:r(V["s-est"]), 請求金額合計:r(V["s-bill"]), 見積内請求:r(V["s-in"]), 見積外請求:r(V["s-out"]), 全体残金:r(V["s-rem"]), 見積範囲残金:r(V["s-remin"]),
+      経費:r(V["sm-exp"]), 外注:r(V["sm-sub"]), 売上金額:r(V["sm-sale"]), 物件単価:r(V["s-avg"]), 実質単価:r(V["sm-unit"]), 実働時間計:r(V["sm-act"]),
+      工程進捗:r(V["k-prg"]), 総社内想定時間:r(V["g-esttot"]), 総実働時間:r(V["g-work"]), 想定残時間:r(V["g-remopen"])},
+    作業項目:D.items.map(it => ({itemId:it.id, No:V["no-" + it.id], 作業項目:it.name, グループ:it.group || "", 区分:it.kbn, 作業者:workerOf(it, info),
+      枚数:it.qty === undefined ? "" : it.qty, 単位時間:r(it.unitHr), 見積合計時間:r(V["qtot-" + it.id]), 単価:r(V["rate-" + it.id]), 見積金額:r(V["qamt-" + it.id]),
+      一式の金額:r(it.lumpAmt), 社内想定時間:r(V["kest-" + it.id]), 請求時間計:r(V["bsum-" + it.id]), 実働時間計:r(V["bwsum-" + it.id]), 請求金額:r(V["bamt-" + it.id]),
+      進捗:r(V["kprg-" + it.id]), 残時間:r(V["krem-" + it.id]), 開始日:it.workStart || "", 完了予定日:it.due || "", 提出期限:it.deadline || "", 完了:!!it.done})),
+    月別:D.months.map(m => { const mo = p.monthly[m] || {}; return {月:m, 請求時間:r(V["mt-" + m]), 実働時間:r(V["mw-" + m]), 請求金額:r(V["ma-" + m]),
+      経費:r(mo.exp), 外注:r(mo.sub), 売上金額:r(V["msale-" + m]), 実質単価:r(V["mr-" + m]), 想定の月:!!mo.plan}; })};
+}
+async function aiLoadAll(force){
+  if(!force && viewAll && Date.now() - viewAllAt < 5 * 60 * 1000) return viewAll;
+  const j = await gasCall({action:"getAll"});
+  viewAll = (j.projects || []).map(x => { try{ return normalize(x.project); }catch(e){ return null; } }).filter(Boolean);
+  viewAllAt = Date.now();
+  return viewAll;
+}
+// 今の範囲（この案件／全案件）のデータ。map は変更案の解決に使う（AIには送らない）
+async function aiContext(){
+  if(aiScope === "one"){
+    if(VIEW_MODE && !viewLoaded) throw new Error("案件を開いてから質問してください（全案件について聞くときは「全案件」を選びます）");
+    const p = P(); return {data:{範囲:"この案件", 今日:aiToday(), 案件:aiCompact(p)}, map:{[p.id]:p}, one:p.id};
+  }
+  const list = VIEW_MODE ? await aiLoadAll(false) : Object.values(store.projects);
+  const map = {}; list.forEach(p => map[p.id] = p);
+  return {data:{範囲:VIEW_MODE ? "全員の全案件" : "自分の全案件", 今日:aiToday(), 案件:list.map(aiCompact)}, map, one:null};
+}
+function aiSystem(data){
+  return `あなたは、水処理プラント設計会社の施工グループで使う「工程・請求管理アプリ」に組み込まれたアシスタントです。図面作成の案件ごとに、見積・工程・請求・売上を管理しています。
+今日は ${aiToday()} です。${VIEW_MODE ? "相手は全体用（管理者向け・閲覧専用）のアプリを使っています。変更案は担当者に送られ、担当者が個人用アプリで確認して適用します。" : "相手は個人用アプリで自分の案件を管理している担当者です。"}
+
+# 答え方
+- 日本語で、結論 → 根拠 → 打ち手 の順に簡潔に。箇条書き・短い表を使ってよい。
+- 根拠には、下のデータの数字（日付・時間・金額・単価）を必ず示す。データにないこと（客先の事情、人の空き状況など）は「データからは分からない」と書く。推測は推測と書く。
+- 金額は円、時間はHr。選択肢があるときは、案ごとの得失（期限・売上・単価への影響）を並べる。
+- データを変えた方がよいときは、propose_changes ツールで具体的な変更案を出す（アプリが変更前→変更後を表示し、人が選んで適用する。あなたが直接変えることはない）。必要なものだけを出す。
+
+# データの意味
+- 請求期間：案件の開始日と終了日。作業項目の開始日・完了予定日が空欄のときは、この期間の日付が使われる。
+- 月は請求の月度（YYYY-MM＝前月21日〜当月20日）。「想定の月」は計算に入れない月。
+- 区分：見積内／見積外／所掌外（請求しない・自社範囲外）／請求不可（請求できないが社内時間はかかる）。
+- 見積金額＝見積合計時間×単価（一式で金額を直接入れた項目はその金額）。請求金額＝請求時間×単価。売上金額＝請求金額−経費−外注。
+- 物件単価・実質単価は、売上を時間で割った1時間あたりの金額。工程進捗＝実働時間÷社内想定時間（完了は100%）。残時間＝社内想定時間−実働時間。
+- 日程をずらすとき、アプリでは「同じ作業者・未完了・その項目の開始日以降に始まる項目」を連動して一緒にずらせる（shift の linked=true）。
+
+# 変更案（propose_changes）の書き方
+- set：projectId・itemId・field・value。field は workStart/due/deadline（YYYY-MM-DD）、estHr/totalHr/unitHr/rate/lumpAmt（数値）、qty（数値または「一式」）、kbn（見積内/見積外/所掌外/請求不可）、done（true/false）、worker（名前）。
+- shift：projectId・itemId・days・linked。
+- add_item：projectId・item（name・kbn・qty・unitHr または totalHr・estHr・workStart・due）。
+- monthly：projectId・month（YYYY-MM）・field（exp=経費／sub=外注）・value。
+- projectId・itemId は必ずデータにある値を使う。
+
+# データ（JSON）
+${JSON.stringify(data)}`;
+}
+
+/* ---------- 変更案 → 変更前・変更後の一覧（ops） ---------- */
+function aiNorm(f, v){
+  const t = (AI_FIELDS[f] || {}).type, s = String(v === undefined || v === null ? "" : v).trim();
+  if(t === "date"){ if(!s) return ""; const m = s.match(/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})/); return m ? isoOf(Number(m[1]), Number(m[2]), Number(m[3])) : undefined; }
+  if(t === "num"){ if(!s) return ""; const n = Number(s.replace(/[,，円Hrｈ時間]/g, "")); return isFinite(n) ? n : undefined; }
+  if(t === "qty"){ if(s === "一式") return "一式"; if(!s) return ""; const n = Number(s); return isFinite(n) ? n : undefined; }
+  if(t === "kbn") return [KBN_IN, KBN_OUT, KBN_NA, KBN_NB].includes(s) ? s : undefined;
+  if(t === "bool") return s === "true" || s === "完了" || s === "1";
+  if(t === "text") return s.slice(0, 40);
+  return undefined;
+}
+function aiShow(f, v){
+  if(v === "" || v === null || v === undefined) return "（空欄）";
+  const t = (AI_FIELDS[f] || {}).type;
+  if(t === "date") return showDatePlain ? showDatePlain(v) : v;
+  if(t === "bool") return v ? "完了" : "未完了";
+  if(t === "num") return (f === "rate" || f === "lumpAmt") ? aiYen(v) : aiN(v) + "Hr";
+  if(f === "exp" || f === "sub") return aiYen(v);
+  return String(v);
+}
+function aiOps(ch, map, oneId){
+  const ops = [];
+  (Array.isArray(ch && ch.changes) ? ch.changes : []).forEach(c => {
+    const pid = c.projectId && map[c.projectId] ? c.projectId : oneId; const p = map[pid]; if(!p) return;
+    const pname = p.info.name || "（施設名なし）", reason = String(c.reason || "").slice(0, 300);
+    const itemOf = id => p.items.find(x => x.id === id);
+    if(c.kind === "set"){
+      const it = itemOf(c.itemId), f = c.field; if(!it || !AI_FIELDS[f]) return;
+      const to = aiNorm(f, c.value); if(to === undefined) return;
+      const from = it[f] === undefined ? "" : it[f]; if(String(from) === String(to)) return;
+      ops.push({pid, pname, kind:"item", iid:it.id, iname:it.name, field:f, label:AI_FIELDS[f].label, from, to, reason});
+    }else if(c.kind === "shift"){
+      const it = itemOf(c.itemId), d = Math.round(Number(c.days) || 0); if(!it || !d) return;
+      const ids = [it.id].concat(c.linked === false ? [] : linkedIdsIn(p, it.id));
+      ids.forEach((id, k) => { const x = itemOf(id); if(!x) return;
+        const s0 = x.workStart || p.info.startDate, e0 = x.due || p.info.endDate;
+        const r2 = k === 0 ? reason : `${it.name} を ${d > 0 ? "+" : ""}${d}日ずらすのに連動`;
+        if(s0) ops.push({pid, pname, kind:"item", iid:x.id, iname:x.name, field:"workStart", label:"開始日", from:x.workStart || "", to:isoAdd(s0, d), reason:r2, shift:d});
+        if(e0) ops.push({pid, pname, kind:"item", iid:x.id, iname:x.name, field:"due", label:"完了予定日", from:x.due || "", to:isoAdd(e0, d), reason:r2, shift:d}); });
+    }else if(c.kind === "add_item"){
+      const it = c.item || {}; const name = String(it.name || "").trim().slice(0, 80); if(!name) return;
+      const add = {name}; Object.keys(AI_FIELDS).forEach(f => { if(it[f] !== undefined){ const v = aiNorm(f, it[f]); if(v !== undefined && v !== "") add[f] = v; } });
+      if(!add.kbn) add.kbn = KBN_IN;
+      ops.push({pid, pname, kind:"add", iname:name, label:"作業項目を追加", from:"", to:add, reason});
+    }else if(c.kind === "monthly"){
+      const m = String(c.month || ""), f = c.field; if(!/^\d{4}-\d{2}$/.test(m) || !AI_MFIELDS[f]) return;
+      const n = Number(String(c.value || "").replace(/[,円]/g, "")); if(!isFinite(n)) return;
+      const from = (p.monthly[m] || {})[f]; if(String(from === undefined ? "" : from) === String(n)) return;
+      ops.push({pid, pname, kind:"monthly", month:m, field:f, label:`${m} の${AI_MFIELDS[f]}`, iname:"", from:from === undefined ? "" : from, to:n, reason});
+    }
+  });
+  return ops;
+}
+function aiOpText(o){
+  if(o.kind === "add"){ const t = o.to; return `作業項目を追加「${o.iname}」（${[t.kbn, t.qty !== undefined ? "枚数 " + t.qty : "", t.totalHr !== undefined ? "合計 " + t.totalHr + "Hr" : "", t.workStart ? showDatePlain(t.workStart) + "〜" + (t.due ? showDatePlain(t.due) : "") : ""].filter(Boolean).join("・")}）`; }
+  const f = o.kind === "monthly" ? o.field : o.field;
+  return `${o.iname ? o.iname + " の" : ""}${o.label}：${aiShow(f, o.from)} → ${aiShow(f, o.to)}`;
+}
+// 今の値が、提案したときの値と違うか（提案のあとに担当者が変えたか）
+function aiConflict(o){
+  const p = store.projects[o.pid]; if(!p) return "この案件はこのアプリにありません";
+  if(o.kind === "item"){ const it = p.items.find(x => x.id === o.iid); if(!it) return "この作業項目は削除されています";
+    const cur = it[o.field] === undefined ? "" : it[o.field]; return String(cur) === String(o.from) ? "" : `提案のあとに変更されています（今の値：${aiShow(o.field, cur)}）`; }
+  if(o.kind === "monthly"){ const cur = (p.monthly[o.month] || {})[o.field]; return String(cur === undefined ? "" : cur) === String(o.from) ? "" : `提案のあとに変更されています（今の値：${aiShow(o.field, cur)}）`; }
+  return "";
+}
+function aiApplyOps(ops, label){
+  const pids = [...new Set(ops.map(o => o.pid))].filter(pid => store.projects[pid]);
+  if(!pids.length) return 0;
+  aiUndo.push({label, at:Date.now(), snaps:pids.map(pid => [pid, JSON.stringify(store.projects[pid])])});
+  if(aiUndo.length > 20) aiUndo.shift();
+  let n = 0;
+  ops.forEach(o => {
+    const p = store.projects[o.pid]; if(!p) return;
+    if(o.kind === "item"){ const it = p.items.find(x => x.id === o.iid); if(it){ it[o.field] = o.to; n++; } }
+    else if(o.kind === "monthly"){ p.monthly[o.month] = p.monthly[o.month] || {}; p.monthly[o.month][o.field] = o.to; n++; }
+    else if(o.kind === "add"){ const it = newItem(""); Object.assign(it, o.to); p.items.push(it); n++; }
+  });
+  pids.forEach(pid => { const p = store.projects[pid]; p.updatedAt = Date.now(); if(typeof markPending === "function") markPending(pid); });
+  save(); aiRerenderApp();
+  return n;
+}
+function aiUndoLast(){
+  const u = aiUndo.pop(); if(!u){ toast("元に戻せる操作はありません"); return; }
+  u.snaps.forEach(([pid, json]) => { store.projects[pid] = JSON.parse(json); store.projects[pid].updatedAt = Date.now(); if(typeof markPending === "function") markPending(pid); });
+  save(); aiRerenderApp(); aiRender(); toast(`元に戻しました（${u.label}）`);
+}
+function aiRerenderApp(){ try{ if(RENDER[currentTab]) RENDER[currentTab](); refresh(); renderProjSel && renderProjSel(); }catch(e){} }
+
+/* ---------- 質問を送る ---------- */
+const AI_REVIEW = {
+  review_kotei:"工程見直しをしてください。観点：①提出期限・完了予定日に間に合うか（遅れ・遅れそうな項目）②社内想定時間に対する実働の超過と残時間 ③作業の重なり・空き・作業者ごとの負荷 ④遅れが後ろの工程へ波及しないか。問題点を重要度（高・中・低）の順に、根拠の数字付きで挙げ、それぞれの改善案を示してください。日程や想定時間を変えるべきものは propose_changes で変更案を出してください。",
+  review_kingaku:"金額見直しをしてください。観点：①物件単価・実質単価の低さとその原因（どの項目・どの月か）②見積外として請求できそうな作業（想定や見積を超えた実働など）③請求漏れ（実働はあるのに請求時間がない月・項目）④経費・外注の比率 ⑤見積の残金と残作業の釣り合い ⑥一式で金額や合計時間が未入力の項目。問題点を重要度（高・中・低）の順に、根拠の数字付きで挙げ、それぞれの改善案を示してください。数字を変えるべきものは propose_changes で変更案を出してください。"
+};
+const aiKey = () => aiScope === "one" ? (VIEW_MODE ? "v:" : "p:") + (store.current || "") : (VIEW_MODE ? "v:all" : "p:all");
+async function aiSend(text, purpose){
+  text = String(text || "").trim(); if(!text || aiBusy) return;
+  if(!gasUrl()){ toast("スプレッドシート連携（GAS）が未設定のため、AIを使えません"); return; }
+  const key = aiKey(), list = aiMsgs[key] = aiMsgs[key] || [];
+  let ctx;
+  try{ aiBusy = true; aiRender(); ctx = await aiContext(); }
+  catch(err){ aiBusy = false; toast(err.message); aiRender(); return; }
+  list.push({role:"user", text, purpose:purpose || "", at:Date.now()});
+  aiDraft = ""; aiRender(true);
+  try{
+    const hist = list.filter(m => !m.err).slice(-16).map(m => ({role:m.role,
+      content:m.role === "assistant" && m.ops && m.ops.length ? m.text + "\n\n（このとき出した変更案：" + m.ops.map(aiOpText).join("／") + "）" : m.text}));
+    const one = ctx.one ? ctx.map[ctx.one] : null;
+    const j = await gasCall({action:"ai", purpose:purpose || (VIEW_MODE ? "chat_view" : "chat_personal"), system:aiSystem(ctx.data), messages:hist,
+      tools:[AI_TOOL], max_tokens:4000, user:aiUser(), projectId:one ? one.id : "全案件", projectName:one ? one.info.name : "全案件"});
+    let t = "", ch = null;
+    (j.content || []).forEach(b => { if(b.type === "text") t += b.text; if(b.type === "tool_use" && b.name === "propose_changes") ch = b.input; });
+    const ops = ch ? aiOps(ch, ctx.map, ctx.one) : [];
+    list.push({role:"assistant", text:t.trim() || (ch && ch.summary) || "（返事が空でした）", summary:ch && ch.summary || "", ops,
+      sel:ops.map(() => true), state:"", usage:Object.assign({model:j.model}, j.usage || {}), at:Date.now()});
+    if(aiCfg && j.month){ aiCfg.usage.month.jpy = j.month.jpy; renderAiBtn(); }
+    aiLoadCfg();
+  }catch(err){ list.push({role:"assistant", text:"エラー：" + err.message, err:true, at:Date.now()}); }
+  aiBusy = false; aiRender(true);
+}
+function aiReview(purpose){
+  aiOpenPanel(); aiPane = "chat";
+  if(VIEW_MODE && !viewLoaded) aiScope = "all";
+  aiSend(AI_REVIEW[purpose], purpose);
+}
+
+/* ---------- 使用量・設定（各種設定シート） ---------- */
+async function aiLoadCfg(){
+  if(!gasUrl()) { renderAiBtn(); return; }
+  try{ const j = await gasCall({action:"aiConfig"}); aiCfg = j; }catch(e){ aiCfg = aiCfg || {err:e.message}; }
+  renderAiBtn(); if(currentTab === "ai") renderAiView();
+}
+function aiMiniPie(raw, label){
+  const R = 14, C = 2 * Math.PI * R, pct = Math.min(100, Math.max(0, raw)), len = C * pct / 100;
+  const col = raw >= 100 ? "#FF6B61" : raw >= 80 ? "#F5A524" : "#4CC38A";
+  return `<svg viewBox="0 0 38 38" width="34" height="34" aria-hidden="true"><circle cx="19" cy="19" r="${R}" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="6"/>${pct > 0 ? `<circle cx="19" cy="19" r="${R}" fill="none" stroke="${col}" stroke-width="6" stroke-dasharray="${len.toFixed(2)} ${(C - len).toFixed(2)}" transform="rotate(-90 19 19)"/>` : ""}<text x="19" y="22.2" text-anchor="middle" font-size="${label.length > 3 ? 8 : 9.5}" font-weight="700" fill="#fff">${label}</text></svg>`;
+}
+function renderAiBtn(){
+  const b = $("#btnAiUse"); if(!b) return;
+  const c = aiCfg, pie = $("#aiPie"), sub = $("#aiSub");
+  let tip = "AI・API関連";
+  if(!gasUrl()){ pie.innerHTML = aiMiniPie(0, "AI"); sub.textContent = "未接続"; }
+  else if(!c || c.err || !c.usage){ pie.innerHTML = aiMiniPie(0, "AI"); sub.textContent = c && c.err ? "読み込めません" : "読み込み中…"; }
+  else if(c.limit){
+    const used = c.usage.month.jpy, raw = used / c.limit * 100, left = Math.max(0, c.limit - used);
+    pie.innerHTML = aiMiniPie(raw, (raw >= 10 ? Math.round(raw) : raw.toFixed(1)) + "%");
+    sub.textContent = c.reached || raw >= 100 ? "上限に達しました" : `上限 ${aiYen(c.limit)}｜使用 ${aiYen(used)}｜残 ${aiYen(left)}`;
+    tip = `月度（21日〜翌月20日）の上限 ${aiYen(c.limit)}／今月度の使用 ${aiYen(used)}／残り ${aiYen(left)}`;
+    b.classList.toggle("ng", raw >= 100);
+  }else{ pie.innerHTML = aiMiniPie(0, "—"); sub.textContent = `今月度 ${aiYen(c.usage.month.jpy)}｜上限なし`; }
+  b.title = tip;
+  const bd = $("#aiBadge"); if(bd){ const n = VIEW_MODE ? 0 : aiInbox.length; bd.hidden = !n; bd.textContent = n; }
+}
+function renderAiView(){
+  const box = $("#v-ai"); if(!box) return;
+  const c = aiCfg;
+  const back = `<div class="ai-vhead"><button class="hbtn ai-back" data-aiback="1">← 戻る</button><h2>AI・API関連</h2><button class="save-btn" data-aiv="reload">最新の情報を読み込む</button></div>`;
+  if(!gasUrl()){ box.innerHTML = back + `<div class="block"><p class="note">スプレッドシート連携（GAS）が未設定のため、AIは使えません。</p></div>`; return; }
+  if(!c || !c.usage){ box.innerHTML = back + `<div class="block"><p class="note">${c && c.err ? "読み込めませんでした：" + esc(c.err) + "（GASを新しいバージョンでデプロイしたか確認してください）" : "読み込んでいます…"}</p></div>`; return; }
+  const u = c.usage, rate = c.rate || 150, lim = c.limit;
+  const pct = lim ? Math.min(100, u.month.jpy / lim * 100) : 0;
+  const bigPie = (() => { const R = 46, C = 2 * Math.PI * R, len = C * pct / 100, col = pct >= 100 ? "#E5484D" : pct >= 80 ? "#F08C00" : "#6D5DF6";
+    return `<svg viewBox="0 0 120 120" width="120" height="120" role="img" aria-label="今月度の使用割合 ${pct.toFixed(1)}%"><circle cx="60" cy="60" r="${R}" fill="none" stroke="#E8EDF3" stroke-width="14"/>${pct > 0 ? `<circle cx="60" cy="60" r="${R}" fill="none" stroke="${col}" stroke-width="14" stroke-linecap="round" stroke-dasharray="${len.toFixed(2)} ${(C - len).toFixed(2)}" transform="rotate(-90 60 60)"/>` : ""}<text x="60" y="66" text-anchor="middle" font-size="20" font-weight="700" fill="#0F2747">${lim ? (pct >= 10 ? Math.round(pct) : pct.toFixed(1)) + "%" : "—"}</text></svg>`; })();
+  const both = (jpy, usd) => `${aiYen(jpy)}<small>（${aiUsd(usd)}）</small>`;
+  const urow = (lb, o) => `<tr><td>${lb}</td><td class="v">${aiN(o.calls)}回</td><td class="v">${aiN(o.input + o.output)}</td><td class="v yen">${both(o.jpy, o.usd)}</td></tr>`;
+  const pname = k => (c.purposes.find(p => p.key === k) || {}).name || k;
+  const pu = v => "$" + (Number(v) || 0).toFixed(2);
+  box.innerHTML = back + `
+  <div class="ai-grid">
+    <div class="block ai-card">
+      <h3>月度の使用料金の上限 <small>（1か月＝21日〜翌月20日）</small></h3>
+      <div class="ai-lim">${bigPie}<div><div class="ai-big">${aiYen(u.month.jpy)}<small> 使用（${esc(u.month.label)}）</small></div>
+        <div class="note">${lim ? `上限 ${aiYen(lim)}（${aiUsd(lim / rate)}）／残り ${aiYen(Math.max(0, lim - u.month.jpy))}${c.reached ? `<br><b style="color:#B4233A">上限に達したため、AIを止めています</b>` : ""}` : "上限：設定なし"}</div>
+        <div class="note">全体用：1日あたりの質問回数の上限 ${c.viewDaily ? c.viewDaily + "回（今日 " + u.viewToday + "回）" : "なし"}</div>
+        <div class="note">APIキー：${c.keySet ? "設定済み" : `<b style="color:#B4233A">未設定（「各種設定」シートに貼り付けてください）</b>`}</div></div></div>
+    </div>
+    <div class="block ai-card">
+      <h3>直近3回の利用（全員）</h3>
+      ${u.recent.length ? `<table class="ai-tbl"><thead><tr><th>日時</th><th>利用者</th><th>用途</th><th>モデル</th><th class="v">トークン</th><th class="v">目安料金</th></tr></thead><tbody>${u.recent.map(r => { const d = new Date(r.at); return `<tr><td>${d.getMonth() + 1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2, "0")}</td><td>${esc(r.user || "（未登録）")}<small>${esc(r.app)}</small></td><td>${esc(pname(r.purpose))}</td><td><span class="model-pill">${esc(modelName(r.model))}</span></td><td class="v">${aiN(r.input + r.output)}</td><td class="v yen">${aiYen(r.jpy)}</td></tr>`; }).join("")}</tbody></table>` : `<div class="note">まだ記録がありません</div>`}
+      <h3 style="margin-top:14px">今月度の用途別</h3>
+      ${u.byPurpose.length ? `<table class="ai-tbl"><tbody>${u.byPurpose.map(o => `<tr><td>${esc(pname(o.purpose))}</td><td class="v">${aiN(o.calls)}回</td><td class="v yen">${both(o.jpy, o.usd)}</td></tr>`).join("")}</tbody></table>` : `<div class="note">今月度の記録はありません</div>`}
+    </div>
+    <div class="block ai-card">
+      <h3>利用者別の使用量</h3>
+      ${u.byUser.length ? `<table class="ai-tbl"><thead><tr><th rowspan="2">利用者</th><th colspan="2" class="c">今月度</th><th colspan="2" class="c">全累計</th></tr><tr><th class="v">回数</th><th class="v">目安料金</th><th class="v">回数</th><th class="v">目安料金</th></tr></thead><tbody>${u.byUser.map(x => `<tr${x.user === aiUser() ? ' class="me"' : ""}><td>${esc(x.user)}</td><td class="v">${aiN(x.month.calls)}</td><td class="v yen">${both(x.month.jpy, x.month.usd)}</td><td class="v">${aiN(x.all.calls)}</td><td class="v yen">${both(x.all.jpy, x.all.usd)}</td></tr>`).join("")}</tbody></table>` : `<div class="note">まだ記録がありません</div>`}
+      <p class="note">利用者は、AI相談の欄に入れた名前です（ログイン認証ではありません）。詳しい記録はスプレッドシートの「トークン集計」シートで見られます。</p>
+    </div>
+    <div class="block ai-card">
+      <h3>月度ごとの使用料金（最近12か月度）</h3>
+      ${u.hist.length ? `<table class="ai-tbl"><thead><tr><th>月度</th><th class="v">回数</th><th class="v">トークン</th><th class="v">目安料金</th></tr></thead><tbody>${u.hist.map(o => urow(esc(o.label), o)).join("")}</tbody><tfoot>${urow("全累計", u.all)}</tfoot></table>` : `<div class="note">まだ記録がありません</div>`}
+    </div>
+    <div class="block ai-card">
+      <h3>スプレッドシートの各種設定（確認用）</h3>
+      <p class="note">モデル・各モデルの料金・為替レート・月度の上限は、スプレッドシートの「各種設定」シートで設定します（アプリからは変更できません）。</p>
+      <table class="ai-tbl"><tbody><tr><td>為替レート</td><td>1ドル＝${aiN(rate)}円</td></tr><tr><td>月度の使用料金の上限</td><td>${lim ? aiYen(lim) : "なし"}</td></tr><tr><td>全体用：1日の質問回数の上限</td><td>${c.viewDaily ? c.viewDaily + "回" : "なし"}</td></tr></tbody></table>
+      <h3 style="margin-top:14px">用途ごとの使用モデル</h3>
+      <table class="ai-tbl"><tbody>${c.purposes.map(p => `<tr><td>${esc(p.name)}</td><td><span class="model-pill">${esc(modelName(p.model))}</span></td></tr>`).join("")}</tbody></table>
+    </div>
+    <div class="block ai-card">
+      <h3>モデル別の単価（100万トークンあたり）</h3>
+      <table class="ai-tbl"><thead><tr><th>モデル</th><th class="v">入力</th><th class="v">出力</th><th class="v">しきい値</th><th class="v">超過時 入力</th><th class="v">超過時 出力</th></tr></thead><tbody>${c.prices.map(m => `<tr><td>${esc(modelName(m.model))}</td><td class="v">${pu(m.input)}<small>（${aiYen(m.input * rate)}）</small></td><td class="v">${pu(m.output)}<small>（${aiYen(m.output * rate)}）</small></td><td class="v">${m.threshold ? aiN(m.threshold) : "—"}</td><td class="v">${m.input2 !== null && m.input2 !== undefined ? pu(m.input2) : "—"}</td><td class="v">${m.output2 !== null && m.output2 !== undefined ? pu(m.output2) : "—"}</td></tr>`).join("")}</tbody></table>
+      <p class="note">「しきい値」は、1回の入力がそのトークン数を超えたときだけ超過時の単価になるモデル用です。</p>
+      <div style="display:flex;gap:10px;align-items:center;margin-top:10px"><button class="save-btn" data-aiv="test">接続テスト</button><span class="note" id="aiTestRes"></span></div>
+    </div>
+  </div>`;
+}
+async function aiTest(){
+  const el = $("#aiTestRes"); if(el) el.textContent = "確認しています…";
+  try{
+    const j = await gasCall({action:"ai", purpose:"test", messages:[{role:"user", content:"「接続OK」とだけ返してください"}], max_tokens:20, user:aiUser(), projectId:"", projectName:"接続テスト"});
+    const t = (j.content || []).filter(b => b.type === "text").map(b => b.text).join("");
+    if(el) el.textContent = `${t.trim() || "返事あり"}（${modelName(j.model)}・${aiYen(j.usage && j.usage.jpy)}）`;
+    aiLoadCfg();
+  }catch(err){ if(el) el.textContent = "接続できませんでした：" + err.message; }
+}
+
+/* ---------- 全体用 → 個人用：提案の受け渡し ---------- */
+async function aiLoadInbox(){
+  if(VIEW_MODE || !gasUrl()) return;
+  try{ const j = await gasCall({action:"propList", ids:Object.keys(store.projects)}); aiInbox = j.list || []; }catch(e){}
+  renderAiBtn(); if(aiPanelOpen) aiRender();
+}
+async function aiLoadSent(){
+  if(!VIEW_MODE || !gasUrl()) return;
+  try{ const j = await gasCall({action:"propList", all:true}); aiSent = j.list || []; }catch(e){ aiSent = []; toast("送った提案を読み込めませんでした：" + e.message); }
+  if(aiPanelOpen) aiRender();
+}
+async function aiSendProposal(m, note){
+  const conv = (aiMsgs[aiKey()] || []).filter(x => !x.err).slice(-20).map(x => ({role:x.role, text:String(x.text).slice(0, 4000), at:x.at}));
+  const ops = m.ops.filter((o, i) => m.sel[i]);
+  if(!ops.length){ toast("送る変更案を選んでください"); return; }
+  const groups = {}; ops.forEach(o => (groups[o.pid] = groups[o.pid] || []).push(o));
+  const by = aiUser(); if(!by){ toast("AI相談の欄の上で、送り主の名前を入れてください"); return; }
+  let n = 0;
+  for(const pid of Object.keys(groups)){
+    const p = (viewAll || []).find(x => x.id === pid) || store.projects[pid];
+    const to = p ? String(p.info.worker || "") : "";
+    try{ await gasCall({action:"propSend", pid, pname:groups[pid][0].pname, to, by, note, ops:groups[pid], convo:conv}); n++; }
+    catch(err){ toast("送れませんでした：" + err.message); return; }
+  }
+  m.state = "sent"; m.sentTo = Object.keys(groups).length; aiRender(); aiSent = null;
+  toast(`${n}件の案件の担当者に提案を送りました`);
+}
+async function aiResolveProp(pr, status, applied, skipped){
+  try{ await gasCall({action:"propResult", id:pr.id, status, detail:{applied, skipped, by:aiUser(), at:Date.now()}}); }catch(e){ toast("結果を送れませんでした：" + e.message); }
+  aiInbox = aiInbox.filter(x => x.id !== pr.id); aiOpenProp = null; aiPane = "inbox"; renderAiBtn(); aiRender();
+}
+
+/* ---------- AI相談パネル ---------- */
+function aiMd(t){
+  const lines = esc(String(t || "")).split("\n"), out = []; let list = null, tbl = null;
+  const inl = s => s.replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/`([^`]+)`/g, "<code>$1</code>");
+  const flush = () => { if(list){ out.push(`<ul>${list.map(x => `<li>${inl(x)}</li>`).join("")}</ul>`); list = null; }
+    if(tbl){ const rows = tbl.filter(r => !/^\s*\|?\s*:?-{2,}/.test(r)).map(r => r.replace(/^\s*\||\|\s*$/g, "").split("|"));
+      out.push(`<table class="ai-mdt">${rows.map((r, i) => `<tr>${r.map(c => i ? `<td>${inl(c.trim())}</td>` : `<th>${inl(c.trim())}</th>`).join("")}</tr>`).join("")}</table>`); tbl = null; } };
+  lines.forEach(l => {
+    if(/^\s*\|.*\|\s*$/.test(l)){ if(list) flush(); (tbl = tbl || []).push(l); return; }
+    if(tbl) flush();
+    const m = l.match(/^\s*(?:[-*・]|\d+[.)．])\s+(.*)$/);
+    if(m){ (list = list || []).push(m[1]); return; }
+    flush();
+    const h = l.match(/^#{1,4}\s+(.*)$/);
+    if(h) out.push(`<h4>${inl(h[1])}</h4>`); else if(l.trim()) out.push(`<p>${inl(l)}</p>`);
+  });
+  flush();
+  return out.join("");
+}
+function aiOpsCard(m, mi, mode){
+  const ops = m.ops; if(!ops || !ops.length) return "";
+  const conf = mode === "prop" ? ops.map(aiConflict) : ops.map(() => "");
+  const nSel = ops.filter((o, i) => m.sel[i]).length;
+  const multi = new Set(ops.map(o => o.pid)).size > 1;
+  let foot = "";
+  if(m.state === "applied") foot = `<div class="ai-ops-done">適用しました（${m.appliedN || 0}件）</div>`;
+  else if(m.state === "skipped") foot = `<div class="ai-ops-done skip">見送りました</div>`;
+  else if(m.state === "sent") foot = `<div class="ai-ops-done">担当者に送りました（${m.sentTo || 1}案件）</div>`;
+  else if(VIEW_MODE) foot = `<label class="ai-note-l">担当者へのひとこと（任意）<input class="ai-note" data-ainote="${mi}" maxlength="500" placeholder="例：客先に確認してから適用してください"></label>
+      <div class="ai-ops-act"><button type="button" class="ai-primary" data-aisend="${mi}">担当者に送る（会話ごと・${nSel}件）</button></div>
+      <div class="ai-ops-hint">全体用では反映されません。担当者が個人用で確認して適用します。</div>`;
+  else foot = `<div class="ai-ops-act"><button type="button" class="ai-primary" data-aiapply="${mode === "prop" ? "prop" : mi}" ${nSel ? "" : "disabled"}>選んだ${nSel}件を適用</button><button type="button" class="ai-sec" data-aiskip="${mode === "prop" ? "prop" : mi}">見送り</button></div>`;
+  const locked = !!m.state;
+  return `<div class="ai-ops">
+    <div class="ai-ops-h"><b>変更案（${ops.length}件）</b>${m.summary ? `<span>${esc(m.summary)}</span>` : ""}</div>
+    ${ops.map((o, i) => `<label class="ai-op${conf[i] ? " conflict" : ""}${o.kind === "add" ? " add" : ""}"><input type="checkbox" data-aiop="${mode === "prop" ? "prop" : mi}:${i}"${m.sel[i] ? " checked" : ""}${locked ? " disabled" : ""}>
+      <span>${multi ? `<em>${esc(o.pname)}</em>` : ""}${esc(aiOpText(o))}${o.reason ? `<small>${esc(o.reason)}</small>` : ""}${conf[i] ? `<small class="cf">${esc(conf[i])}</small>` : ""}</span></label>`).join("")}
+    ${foot}</div>`;
+}
+function aiMsgHtml(m, mi){
+  if(m.role === "user") return `<div class="ai-msg me">${m.purpose && AI_REVIEW[m.purpose] ? `<b>${m.purpose === "review_kotei" ? "工程見直し" : "金額見直し"}</b>` : esc(m.text).replace(/\n/g, "<br>")}</div>`;
+  const u = m.usage && m.usage.model ? `<div class="ai-use">${esc(modelName(m.usage.model))}・入力 ${aiN(m.usage.input)}／出力 ${aiN(m.usage.output)}・約${aiYen(m.usage.jpy)}</div>` : "";
+  return `<div class="ai-msg ai${m.err ? " err" : ""}">${aiMd(m.text)}${aiOpsCard(m, mi, "chat")}${u}</div>`;
+}
+function aiRender(scrollBottom){
+  const el = $("#aiPanel"); if(!el) return;
+  el.hidden = !aiPanelOpen; document.body.classList.toggle("ai-open", aiPanelOpen);
+  if(!aiPanelOpen) return;
+  const keepScroll = el.querySelector(".ai-body") ? el.querySelector(".ai-body").scrollTop : 0;
+  const one = P(), canOne = !VIEW_MODE || viewLoaded;
+  if(aiScope === "one" && !canOne) aiScope = "all";
+  const tabs = VIEW_MODE ? [["chat", "相談"], ["sent", "送った提案"]] : [["chat", "相談"], ["inbox", `届いた提案${aiInbox.length ? `<span class="ai-cnt">${aiInbox.length}</span>` : ""}`]];
+  let body = "", foot = "";
+  if(aiPane === "chat"){
+    const list = aiMsgs[aiKey()] || [];
+    body = (list.length ? list.map(aiMsgHtml).join("") : `<div class="ai-empty"><b>${aiScope === "one" ? `「${esc(one && one.info.name || "この案件")}」` : VIEW_MODE ? "全員の全案件" : "自分の全案件"}について相談できます</b>
+        <p>工程・売上・単価について質問すると、データを見て答え、必要なら変更案を出します。変更案は確認してから${VIEW_MODE ? "担当者に送れます" : "［適用］できます"}。</p></div>`)
+      + (aiBusy ? `<div class="ai-msg ai busy"><span class="dots"><i></i><i></i><i></i></span>データを見て考えています…</div>` : "");
+    const chips = VIEW_MODE ? ["今月、売上が見積を下回りそうな案件は？", "物件単価が低い案件と原因は？", "来週の提出期限は？"] : ["期限に間に合う？", "単価を上げるには？", "今月の請求見込みは？"];
+    foot = `<div class="ai-quick"><button type="button" data-aireview="review_kotei">工程見直し</button><button type="button" data-aireview="review_kingaku">金額見直し</button>${chips.map(c => `<button type="button" class="chip" data-aichip="${esc(c)}">${esc(c)}</button>`).join("")}</div>
+      <div class="ai-input"><textarea id="aiText" rows="2" placeholder="質問を入力（Ctrl+Enter で送信）" ${aiBusy ? "disabled" : ""}>${esc(aiDraft)}</textarea><button type="button" class="ai-primary" data-aisend-q="1" ${aiBusy ? "disabled" : ""}>送信</button></div>`;
+  }else if(aiPane === "inbox"){
+    body = aiInbox.length ? aiInbox.map((pr, i) => { const d = new Date(pr.at); return `<button type="button" class="ai-prop" data-aiprop="${i}"><b>${esc(pr.pname || "（施設名なし）")}</b><span>${esc(pr.by || "（送り主不明）")}・${d.getMonth() + 1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2, "0")}・変更案 ${pr.ops.length}件</span>${pr.note ? `<small>${esc(pr.note)}</small>` : ""}</button>`; }).join("")
+      : `<div class="ai-empty"><b>届いている提案はありません</b><p>全体用で管理者がAIと相談して［担当者に送る］と、ここに届きます。</p></div>`;
+    foot = `<div class="ai-quick"><button type="button" data-aiv="inbox">最新の状態にする</button></div>`;
+  }else if(aiPane === "prop" && aiOpenProp){
+    const pr = aiOpenProp;
+    body = `<div class="ai-prop-h"><b>${esc(pr.pname)}</b><span>${esc(pr.by)}さんから・${new Date(pr.at).toLocaleString("ja-JP")}</span>${pr.note ? `<div class="ai-pnote">${esc(pr.note)}</div>` : ""}</div>
+      <div class="ai-sep">全体用での会話</div>${(pr.convo || []).map(m => m.role === "user" ? `<div class="ai-msg me">${esc(m.text).replace(/\n/g, "<br>")}</div>` : `<div class="ai-msg ai">${aiMd(m.text)}</div>`).join("")}
+      ${aiOpsCard(pr, 0, "prop")}`;
+    foot = `<div class="ai-quick"><button type="button" data-aiv="backinbox">← 届いた提案の一覧へ</button></div>`;
+  }else if(aiPane === "sent"){
+    body = aiSent === null ? `<div class="ai-empty">読み込んでいます…</div>` : aiSent.length ? `<table class="ai-tbl ai-sent"><thead><tr><th>送信</th><th>案件・宛先</th><th>状態</th></tr></thead><tbody>${aiSent.map(x => { const d = new Date(x.at); return `<tr><td>${d.getMonth() + 1}/${d.getDate()}<small>${esc(x.by)}</small></td><td>${esc(x.pname)}<small>${esc(x.to || "")}・${x.count}件</small></td><td><span class="ai-st ${x.status === "適用済み" ? "ok" : x.status === "未対応" ? "wait" : "part"}">${esc(x.status)}</span>${x.result && (x.result.applied || x.result.skipped) ? `<small>適用${x.result.applied || 0}・見送り${x.result.skipped || 0}</small>` : ""}</td></tr>`; }).join("")}</tbody></table>` : `<div class="ai-empty"><b>送った提案はまだありません</b></div>`;
+    foot = `<div class="ai-quick"><button type="button" data-aiv="sent">最新の状態にする</button></div>`;
+    if(aiSent === null) setTimeout(aiLoadSent, 0);
+  }
+  const last = aiUndo[aiUndo.length - 1];
+  el.innerHTML = `<div class="ai-head">
+      <span class="ai-logo" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.6L18 9.5l-4.2 1.9L12 16l-1.8-4.6L6 9.5l4.2-1.9z"/></svg></span>
+      <b>AI相談</b><label class="ai-user">${VIEW_MODE ? "送り主" : "利用者"}<input id="aiUser" value="${esc(aiUser())}" maxlength="20" placeholder="名前"></label>
+      <button type="button" class="ai-x" data-aiclose="1" aria-label="AI相談を閉じる">×</button></div>
+    <div class="ai-tabs">${tabs.map(([k, lb]) => `<button type="button" data-aipane="${k}" class="${aiPane === k || (aiPane === "prop" && k === "inbox") ? "on" : ""}">${lb}</button>`).join("")}</div>
+    ${aiPane === "chat" ? `<div class="ai-scope"><button type="button" data-aiscope="one" class="${aiScope === "one" ? "on" : ""}" ${canOne ? "" : "disabled"}>${VIEW_MODE ? "開いている案件" : "この案件"}</button><button type="button" data-aiscope="all" class="${aiScope === "all" ? "on" : ""}">${VIEW_MODE ? "全案件" : "自分の全案件"}</button>
+      ${(aiMsgs[aiKey()] || []).length ? `<button type="button" class="ai-clear" data-aiv="clear">会話を消す</button>` : ""}</div>` : ""}
+    ${!VIEW_MODE && last ? `<div class="ai-undo"><button type="button" data-aiundo="1">↶ 元に戻す（${esc(last.label)}）</button></div>` : ""}
+    <div class="ai-body">${body}</div><div class="ai-foot">${foot}</div>`;
+  const b = el.querySelector(".ai-body"); if(b) b.scrollTop = scrollBottom ? b.scrollHeight : keepScroll;
+  const ta = $("#aiText"); if(ta && aiPane === "chat" && !aiBusy && scrollBottom !== false) ta.focus({preventScroll:true});
+}
+function aiOpenPanel(){ aiPanelOpen = true; if(!VIEW_MODE) aiLoadInbox(); aiRender(true); }
+
+document.addEventListener("click", e => {
+  const t = e.target.closest && e.target.closest("button,[data-aiop]"); if(!t) return;
+  const d = t.dataset;
+  if(t.id === "btnAi"){ if(aiPanelOpen){ aiPanelOpen = false; aiRender(); } else aiOpenPanel(); return; }
+  if(t.id === "btnAiUse"){ if(currentTab !== "ai") aiPrevTab = currentTab; show("ai"); aiLoadCfg(); return; }
+  if(d.aiback){ show(aiPrevTab && aiPrevTab !== "ai" ? aiPrevTab : "home"); return; }
+  if(d.aiclose){ aiPanelOpen = false; aiRender(); return; }
+  if(d.aipane){ aiPane = d.aipane; if(aiPane === "inbox") aiLoadInbox(); if(aiPane === "sent") aiSent = null; aiRender(); return; }
+  if(d.aiscope){ aiScope = d.aiscope; aiRender(true); return; }
+  if(d.aireview){ aiReview(d.aireview); return; }
+  if(d.aichip){ aiSend(d.aichip); return; }
+  if(d.aisendQ){ const ta = $("#aiText"); aiSend(ta ? ta.value : ""); return; }
+  if(d.aiundo){ aiUndoLast(); return; }
+  if(d.aiv === "reload"){ aiLoadCfg(); return; }
+  if(d.aiv === "test"){ aiTest(); return; }
+  if(d.aiv === "inbox"){ aiLoadInbox(); return; }
+  if(d.aiv === "sent"){ aiSent = null; aiRender(); return; }
+  if(d.aiv === "backinbox"){ aiPane = "inbox"; aiOpenProp = null; aiRender(); return; }
+  if(d.aiv === "clear"){ if(confirm("この会話を消します。よろしいですか？")){ delete aiMsgs[aiKey()]; aiRender(); } return; }
+  if(d.aiprop !== undefined){
+    const pr = aiInbox[Number(d.aiprop)]; if(!pr) return;
+    if(!store.projects[pr.pid]){ toast("この案件はこのアプリにありません"); return; }
+    if(store.current !== pr.pid){ store.current = pr.pid; save(); renderProjSel && renderProjSel(); show(currentTab === "home" ? "kotei" : currentTab); }
+    pr.sel = pr.ops.map(o => !aiConflict(o)); pr.state = "";
+    aiOpenProp = pr; aiPane = "prop"; aiRender(); return;
+  }
+  if(d.aiapply !== undefined){
+    if(d.aiapply === "prop"){ const pr = aiOpenProp; if(!pr) return;
+      const ops = pr.ops.filter((o, i) => pr.sel[i]), n = aiApplyOps(ops, `${pr.by}さんの提案`);
+      toast(`提案を適用しました（${n}件）`); aiResolveProp(pr, ops.length === pr.ops.length ? "適用済み" : "一部見送り", ops.length, pr.ops.length - ops.length); return; }
+    const m = (aiMsgs[aiKey()] || [])[Number(d.aiapply)]; if(!m) return;
+    const ops = m.ops.filter((o, i) => m.sel[i]); const n = aiApplyOps(ops, "AIの変更案");
+    m.state = "applied"; m.appliedN = n; toast(`変更案を適用しました（${n}件）。［元に戻す］で戻せます`); aiRender(); return;
+  }
+  if(d.aiskip !== undefined){
+    if(d.aiskip === "prop"){ const pr = aiOpenProp; if(pr && confirm("この提案を見送ります（何も変更しません）。よろしいですか？")) aiResolveProp(pr, "見送り", 0, pr.ops.length); return; }
+    const m = (aiMsgs[aiKey()] || [])[Number(d.aiskip)]; if(m){ m.state = "skipped"; aiRender(); } return;
+  }
+  if(d.aisend !== undefined){
+    const m = (aiMsgs[aiKey()] || [])[Number(d.aisend)]; if(!m) return;
+    const note = ($(`[data-ainote="${d.aisend}"]`) || {}).value || ""; aiSendProposal(m, note); return;
+  }
+});
+document.addEventListener("change", e => {
+  const c = e.target;
+  if(c.dataset && c.dataset.aiop){
+    const [mi, i] = c.dataset.aiop.split(":"); const m = mi === "prop" ? aiOpenProp : (aiMsgs[aiKey()] || [])[Number(mi)];
+    if(m){ m.sel[Number(i)] = c.checked; aiRender(); } return;
+  }
+  if(c.id === "aiUser"){ lsSet("ai_user", c.value.trim()); }
+});
+document.addEventListener("input", e => { if(e.target.id === "aiText") aiDraft = e.target.value; });
+document.addEventListener("keydown", e => {
+  if(e.target.id === "aiText" && e.key === "Enter" && (e.ctrlKey || e.metaKey)){ e.preventDefault(); aiSend(e.target.value); }
+  if(e.key === "Escape" && aiPanelOpen && !gDrag && !(e.target.closest && e.target.closest("#aiPanel textarea"))){ /* パネルは Esc では閉じない（入力中の誤操作防止） */ }
+});
+function aiInit(){
+  renderAiBtn();
+  if(!gasUrl()) return;
+  aiLoadCfg();
+  if(!VIEW_MODE){ aiLoadInbox(); setInterval(aiLoadInbox, 5 * 60 * 1000); }
+  setInterval(aiLoadCfg, 10 * 60 * 1000);
+}
+
+/* ============================================================
    起動
    ============================================================ */
 if(VIEW_MODE) document.body.classList.add("viewmode");
 renderProjSel();
 show("home");
 if(!VIEW_MODE) renderSyncState();
+aiInit();
 </script>
 
 <div id="updBar" class="upd-bar" hidden><span>新しいバージョンがあります</span><button type="button" id="updBtn">更新する</button></div>
@@ -3450,7 +4249,7 @@ if(!VIEW_MODE) renderSyncState();
 /* ============================================================
    公開版（GitHub Pages）用：更新のお知らせ・ホーム画面への追加・専用リンクの表示
    ============================================================ */
-const APP_VERSION = '1';
+const APP_VERSION = '7';
 (() => {
   const isWeb = /^https?:$/.test(location.protocol);
   // 専用リンクの結果／未設定の案内
