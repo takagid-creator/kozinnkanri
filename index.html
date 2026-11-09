@@ -3941,7 +3941,7 @@ async function aiSend(text, purpose){
       content:m.role === "assistant" && m.ops && m.ops.length ? m.text + "\n\n（このとき出した変更案：" + m.ops.map(aiOpText).join("／") + "）" : m.text}));
     const one = ctx.one ? ctx.map[ctx.one] : null;
     const j = await gasCall({action:"ai", purpose:purpose || (VIEW_MODE ? "chat_view" : "chat_personal"), system:aiSystem(ctx.data), messages:hist,
-      tools:[AI_TOOL], max_tokens:AI_REVIEW[purpose] ? 16000 : 12000, user:aiUser(), projectId:one ? one.id : "全案件", projectName:one ? one.info.name : "全案件"});
+      tools:[AI_TOOL], user:aiUser(), projectId:one ? one.id : "全案件", projectName:one ? one.info.name : "全案件"});
     let t = "", ch = null;
     const cut = j.stop_reason === "max_tokens";            // 出力の上限に達して途中で切れた
     (j.content || []).forEach(b => { if(b.type === "text") t += b.text; if(b.type === "tool_use" && b.name === "propose_changes") ch = b.input; });
@@ -3949,7 +3949,7 @@ async function aiSend(text, purpose){
     const ops = ch ? aiOps(ch, ctx.map, ctx.one) : [];
     const why = {max_tokens:"出力の上限に達しました", end_turn:"AIが何も書かずに終了しました", refusal:"AIが回答を控えました", pause_turn:"AIが途中で止まりました"}[j.stop_reason] || ("終了理由：" + (j.stop_reason || "不明"));
     let body = t.trim() || (ch && ch.summary) || "";
-    if(cut) body = (t.trim() ? t.trim() + "\n\n" : "") + "**※ 回答が長くなり、途中で切れました。** 範囲を絞って質問してください（例：「遅れている項目だけ」「今月の分だけ」）。" + ((j.content || []).some(b => b.type === "tool_use") ? "書きかけの変更案は使っていません。" : "");
+    if(cut) body = (t.trim() ? t.trim() + "\n\n" : "") + "**※ 回答が長くなり、途中で切れました。** 範囲を絞って質問してください（例：「遅れている項目だけ」「今月の分だけ」）。続く場合は、スプレッドシートの「各種設定」シートで、この用途の「出力の上限」を増やしてください。" + ((j.content || []).some(b => b.type === "tool_use") ? "書きかけの変更案は使っていません。" : "");
     if(!body) body = `（返事に本文がありませんでした：${why}。返ってきた内容：${(j.content || []).map(b => b.type).join("・") || "なし"}）`;
     list.push({role:"assistant", text:body, summary:ch && ch.summary || "", ops,
       sel:ops.map(() => true), state:"", usage:Object.assign({model:j.model}, j.usage || {}), at:Date.now()});
@@ -4042,10 +4042,11 @@ function renderAiView(){
     </div>
     <div class="block ai-card">
       <h3>スプレッドシートの各種設定（確認用）</h3>
-      <p class="note">モデル・各モデルの料金・為替レート・月度の上限は、スプレッドシートの「各種設定」シートで設定します（アプリからは変更できません）。</p>
+      <p class="note">モデル・出力の上限・考える量・各モデルの料金・為替レート・月度の上限は、スプレッドシートの「各種設定」シートで設定します（アプリからは変更できません）。</p>
       <table class="ai-tbl"><tbody><tr><td>為替レート</td><td>1ドル＝${aiN(rate)}円</td></tr><tr><td>月度の使用料金の上限</td><td>${lim ? aiYen(lim) : "なし"}</td></tr><tr><td>全体用：1日の質問回数の上限</td><td>${c.viewDaily ? c.viewDaily + "回" : "なし"}</td></tr></tbody></table>
       <h3 style="margin-top:14px">用途ごとの使用モデル</h3>
-      <table class="ai-tbl"><tbody>${c.purposes.map(p => `<tr><td>${esc(p.name)}</td><td><span class="model-pill">${esc(modelName(p.model))}</span></td></tr>`).join("")}</tbody></table>
+      <table class="ai-tbl"><thead><tr><th>用途</th><th>モデル</th><th class="v">出力の上限</th><th>考える量</th><th class="v">上限まで出力した料金</th></tr></thead><tbody>${c.purposes.map(p => `<tr><td>${esc(p.name)}</td><td><span class="model-pill">${esc(modelName(p.model))}</span></td><td class="v">${p.maxTokens ? aiN(p.maxTokens) : "—"}</td><td>${esc(p.effort || (p.maxTokens ? "指定なし" : "—"))}</td><td class="v">${p.maxJpy != null ? "約" + aiYen(p.maxJpy) : "—"}</td></tr>`).join("")}</tbody></table>
+      <p class="note">「上限まで出力した料金」は、返事が出力の上限いっぱいになったときの出力分の料金です（為替レートで計算。入力分は別）。出力の上限・考える量も「各種設定」シートで変えられます。</p>
     </div>
     <div class="block ai-card">
       <h3>モデル別の単価（100万トークンあたり）</h3>
@@ -4286,7 +4287,7 @@ aiInit();
 /* ============================================================
    公開版（GitHub Pages）用：更新のお知らせ・ホーム画面への追加・専用リンクの表示
    ============================================================ */
-const APP_VERSION = '11';
+const APP_VERSION = '12';
 (() => {
   const isWeb = /^https?:$/.test(location.protocol);
   // 専用リンクの結果／未設定の案内
