@@ -3941,7 +3941,7 @@ async function aiSend(text, purpose){
       content:m.role === "assistant" && m.ops && m.ops.length ? m.text + "\n\n（このとき出した変更案：" + m.ops.map(aiOpText).join("／") + "）" : m.text}));
     const one = ctx.one ? ctx.map[ctx.one] : null;
     const j = await gasCall({action:"ai", purpose:purpose || (VIEW_MODE ? "chat_view" : "chat_personal"), system:aiSystem(ctx.data), messages:hist,
-      tools:[AI_TOOL], max_tokens:AI_REVIEW[purpose] ? 8000 : 6000, user:aiUser(), projectId:one ? one.id : "全案件", projectName:one ? one.info.name : "全案件"});
+      tools:[AI_TOOL], max_tokens:AI_REVIEW[purpose] ? 16000 : 12000, user:aiUser(), projectId:one ? one.id : "全案件", projectName:one ? one.info.name : "全案件"});
     let t = "", ch = null;
     const cut = j.stop_reason === "max_tokens";            // 出力の上限に達して途中で切れた
     (j.content || []).forEach(b => { if(b.type === "text") t += b.text; if(b.type === "tool_use" && b.name === "propose_changes") ch = b.input; });
@@ -4286,7 +4286,7 @@ aiInit();
 /* ============================================================
    公開版（GitHub Pages）用：更新のお知らせ・ホーム画面への追加・専用リンクの表示
    ============================================================ */
-const APP_VERSION = '10';
+const APP_VERSION = '11';
 (() => {
   const isWeb = /^https?:$/.test(location.protocol);
   // 専用リンクの結果／未設定の案内
