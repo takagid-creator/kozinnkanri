@@ -1119,6 +1119,7 @@ function normalize(p){
   p.monthly = p.monthly || {};
   p.travel = p.travel || [];
   if(p.info && p.info.facility && !p.info.name) p.info.name = p.info.facility;
+  if(p.info && p.info.targetRate === undefined) p.info.targetRate = "";
   p.items.forEach(i => { i.id = i.id || uid(); i.hours = i.hours || {}; i.work = i.work || {}; if(i.estUnit === undefined) i.estUnit = ""; if(i.worker2 === undefined) i.worker2 = ""; if(i.ratio2 === undefined) i.ratio2 = ""; if(i.memo === undefined) i.memo = ""; });
   return p;
 }
@@ -1351,10 +1352,11 @@ function renderInput(){
   $("#v-input").innerHTML = `
   <div class="block">
     <h2>案件情報</h2>
+    <div class="fgrid" style="margin-bottom:10px">${f("worker","作業者","text",true)}</div>
     <p class="note">ここに入れた内容が見積・工程・請求のすべてに反映されます。</p>
     <div class="fgrid">
       ${f("client","客先名")}${f("name","施設名")}${f("contact","客先担当（「様」は付けずに入力）","text",false,'placeholder="例：辻本"')}${f("orderNo","受注No")}
-      ${f("work","工事名称")}${f("spec","仕様")}${f("rate","請求単価（円/Hr）標準","number",true,'min="0" step="100"')}${f("worker","作業者","text",true)}
+      ${f("work","工事名称")}${f("spec","仕様")}${f("rate","請求単価（円/Hr）標準","number",true,'min="0" step="100"')}${f("targetRate","目標単価（円/Hr）","number",false,'min="0" step="100" title="この案件で目指す1時間あたりの金額。AIの金額見直しは、実質単価・物件単価をこの目標単価と比べて考察します"')}
     </div>
   </div>
   <div class="block">
@@ -3724,7 +3726,7 @@ const modelName = m => MODEL_NAMES[m] || m || "";
 const AI_FIELDS = {
   workStart:{label:"開始日", type:"date"}, due:{label:"完了予定日", type:"date"}, deadline:{label:"提出期限", type:"date"},
   estHr:{label:"社内想定時間", type:"num", unit:"Hr"}, totalHr:{label:"見積の合計時間", type:"num", unit:"Hr"}, unitHr:{label:"単位時間", type:"num", unit:"Hr"},
-  qty:{label:"枚数", type:"qty"}, rate:{label:"単価", type:"num", unit:"円"}, lumpAmt:{label:"一式の金額", type:"num", unit:"円"},
+  qty:{label:"枚数", type:"qty"}, lumpAmt:{label:"一式の金額", type:"num", unit:"円"},
   kbn:{label:"区分", type:"kbn"}, done:{label:"完了", type:"bool"}, worker:{label:"作業者", type:"text"}
 };
 const AI_MFIELDS = {exp:"経費", sub:"外注"};
@@ -3737,7 +3739,7 @@ const AI_TOOL = {
       kind:{type:"string", enum:["set","shift","add_item","monthly"], description:"set=項目の値を変える／shift=開始日と完了予定日を days 日ずらす／add_item=作業項目を追加／monthly=月の経費・外注を変える"},
       projectId:{type:"string", description:"対象の案件の projectId（データにある値）"},
       itemId:{type:"string", description:"対象の作業項目の itemId（set・shift のとき）"},
-      field:{type:"string", description:"set: workStart/due/deadline/estHr/totalHr/unitHr/qty/rate/lumpAmt/kbn/done/worker。monthly: exp/sub"},
+      field:{type:"string", description:"set: workStart/due/deadline/estHr/totalHr/unitHr/qty/lumpAmt/kbn/done/worker（請求単価 rate は変更しない）。monthly: exp/sub"},
       value:{type:"string", description:"変更後の値。日付は YYYY-MM-DD、数値も文字列で、done は true/false"},
       days:{type:"integer", description:"shift でずらす日数（＋で後ろへ、−で前へ）"},
       linked:{type:"boolean", description:"shift で連動項目（同じ作業者・未完了・その項目の開始日以降に始まる項目）も同じ日数ずらすか"},
@@ -3770,20 +3772,23 @@ function linkedIdsIn(p, id, startIso){
 }
 
 /* ---------- AIに渡すデータ（案件を要約したJSON） ---------- */
+// 請求単価（標準・項目ごと）はAIに渡さない。金額の考察は目標単価との比較で行う
+const aiDiff = (v, t) => (isNum(v) && isNum(t) && Number(t) > 0) ? Math.round(Number(v) - Number(t)) : null;
 function aiCompact(p){
   const D = derive(p), V = D.V, info = p.info;
   const r = v => (v === "" || v === null || v === undefined) ? null : isNum(v) ? Math.round(Number(v) * 100) / 100 : v;
-  return {projectId:p.id, 施設名:info.name || "", 客先:info.client || "", 作業者:info.worker || "", 標準単価:r(info.rate),
+  return {projectId:p.id, 施設名:info.name || "", 客先:info.client || "", 作業者:info.worker || "", 目標単価:r(info.targetRate),
     請求期間:{開始:info.startDate || "", 終了:info.endDate || ""},
     合計:{見積合計:r(V["s-est"]), 請求金額合計:r(V["s-bill"]), 見積内請求:r(V["s-in"]), 見積外請求:r(V["s-out"]), 全体残金:r(V["s-rem"]), 見積範囲残金:r(V["s-remin"]),
-      経費:r(V["sm-exp"]), 外注:r(V["sm-sub"]), 売上金額:r(V["sm-sale"]), 物件単価:r(V["s-avg"]), 実質単価:r(V["sm-unit"]), 実働時間計:r(V["sm-act"]),
+      経費:r(V["sm-exp"]), 外注:r(V["sm-sub"]), 売上金額:r(V["sm-sale"]), 物件単価:r(V["s-avg"]), 実質単価:r(V["sm-unit"]),
+      物件単価と目標単価の差:aiDiff(V["s-avg"], info.targetRate), 実質単価と目標単価の差:aiDiff(V["sm-unit"], info.targetRate), 実働時間計:r(V["sm-act"]),
       工程進捗:r(V["k-prg"]), 総社内想定時間:r(V["g-esttot"]), 総実働時間:r(V["g-work"]), 想定残時間:r(V["g-remopen"])},
     作業項目:D.items.map(it => ({itemId:it.id, No:V["no-" + it.id], 作業項目:it.name, グループ:it.group || "", 区分:it.kbn, 作業者:workerOf(it, info),
-      枚数:it.qty === undefined ? "" : it.qty, 単位時間:r(it.unitHr), 見積合計時間:r(V["qtot-" + it.id]), 単価:r(V["rate-" + it.id]), 見積金額:r(V["qamt-" + it.id]),
+      枚数:it.qty === undefined ? "" : it.qty, 単位時間:r(it.unitHr), 見積合計時間:r(V["qtot-" + it.id]), 見積金額:r(V["qamt-" + it.id]),
       一式の金額:r(it.lumpAmt), 社内想定時間:r(V["kest-" + it.id]), 請求時間計:r(V["bsum-" + it.id]), 実働時間計:r(V["bwsum-" + it.id]), 請求金額:r(V["bamt-" + it.id]),
       進捗:r(V["kprg-" + it.id]), 残時間:r(V["krem-" + it.id]), 開始日:it.workStart || "", 完了予定日:it.due || "", 提出期限:it.deadline || "", 完了:!!it.done})),
     月別:D.months.map(m => { const mo = p.monthly[m] || {}; return {月:m, 請求時間:r(V["mt-" + m]), 実働時間:r(V["mw-" + m]), 請求金額:r(V["ma-" + m]),
-      経費:r(mo.exp), 外注:r(mo.sub), 売上金額:r(V["msale-" + m]), 実質単価:r(V["mr-" + m]), 想定の月:!!mo.plan}; })};
+      経費:r(mo.exp), 外注:r(mo.sub), 売上金額:r(V["msale-" + m]), 実質単価:r(V["mr-" + m]), 実質単価と目標単価の差:aiDiff(V["mr-" + m], info.targetRate), 想定の月:!!mo.plan}; })};
 }
 async function aiLoadAll(force){
   if(!force && viewAll && Date.now() - viewAllAt < 5 * 60 * 1000) return viewAll;
@@ -3809,7 +3814,7 @@ function aiSystem(data){
 # 答え方
 - 日本語で、結論 → 根拠 → 打ち手 の順に簡潔に。箇条書き・短い表を使ってよい。
 - 根拠には、下のデータの数字（日付・時間・金額・単価）を必ず示す。データにないこと（客先の事情、人の空き状況など）は「データからは分からない」と書く。推測は推測と書く。
-- 金額は円、時間はHr。選択肢があるときは、案ごとの得失（期限・売上・単価への影響）を並べる。
+- 金額は円、時間はHr。選択肢があるときは、案ごとの得失（期限・売上・目標単価への影響）を並べる。
 - データを変えた方がよいときは、propose_changes ツールで具体的な変更案を出す（アプリが変更前→変更後を表示し、人が選んで適用する。あなたが直接変えることはない）。必要なものだけを出す。
 - 長さの目安：本文は1,500字程度まで。問題点は重要なものから最大5件、変更案は最大10件。必ず先に本文（文章）を書き、そのあとで propose_changes を呼ぶ。
 
@@ -3817,12 +3822,14 @@ function aiSystem(data){
 - 請求期間：案件の開始日と終了日。作業項目の開始日・完了予定日が空欄のときは、この期間の日付が使われる。
 - 月は請求の月度（YYYY-MM＝前月21日〜当月20日）。「想定の月」は計算に入れない月。
 - 区分：見積内／見積外／所掌外（請求しない・自社範囲外）／請求不可（請求できないが社内時間はかかる）。
-- 見積金額＝見積合計時間×単価（一式で金額を直接入れた項目はその金額）。請求金額＝請求時間×単価。売上金額＝請求金額−経費−外注。
-- 物件単価・実質単価は、売上を時間で割った1時間あたりの金額。工程進捗＝実働時間÷社内想定時間（完了は100%）。残時間＝社内想定時間−実働時間。
+- 見積金額・請求金額は、アプリが請求単価から計算した金額（一式で金額を直接入れた項目はその金額）。売上金額＝請求金額−経費−外注。
+- 請求単価（標準・項目ごと）はデータに含めていない。請求単価の高い低いは考察せず、請求単価を変える提案もしない。
+- 物件単価・実質単価は、売上を時間で割った1時間あたりの金額。目標単価は、担当者がこの案件で目指す1時間あたりの金額。
+- 金額・単価についての考察は、物件単価・実質単価（案件全体・月別）を目標単価と比べて行う（「〜と目標単価の差」＝単価−目標単価。マイナスなら目標未達）。目標単価が空欄（null）の案件は「目標単価が未入力」と書き、目標との比較はしない。工程進捗＝実働時間÷社内想定時間（完了は100%）。残時間＝社内想定時間−実働時間。
 - 日程をずらすとき、アプリでは「同じ作業者・未完了・その項目の開始日以降に始まる項目」を連動して一緒にずらせる（shift の linked=true）。
 
 # 変更案（propose_changes）の書き方
-- set：projectId・itemId・field・value。field は workStart/due/deadline（YYYY-MM-DD）、estHr/totalHr/unitHr/rate/lumpAmt（数値）、qty（数値または「一式」）、kbn（見積内/見積外/所掌外/請求不可）、done（true/false）、worker（名前）。
+- set：projectId・itemId・field・value。field は workStart/due/deadline（YYYY-MM-DD）、estHr/totalHr/unitHr/lumpAmt（数値）、qty（数値または「一式」）、kbn（見積内/見積外/所掌外/請求不可）、done（true/false）、worker（名前）。
 - shift：projectId・itemId・days・linked。
 - add_item：projectId・item（name・kbn・qty・unitHr または totalHr・estHr・workStart・due）。
 - monthly：projectId・month（YYYY-MM）・field（exp=経費／sub=外注）・value。
@@ -3924,7 +3931,7 @@ function aiRerenderApp(){ try{ if(RENDER[currentTab]) RENDER[currentTab](); refr
 /* ---------- 質問を送る ---------- */
 const AI_REVIEW = {
   review_kotei:"工程見直しをしてください。観点：①提出期限・完了予定日に間に合うか（遅れ・遅れそうな項目）②社内想定時間に対する実働の超過と残時間 ③作業の重なり・空き・作業者ごとの負荷 ④遅れが後ろの工程へ波及しないか。問題点を重要度（高・中・低）の順に、根拠の数字付きで挙げ、それぞれの改善案を示してください。日程や想定時間を変えるべきものは propose_changes で変更案を出してください。",
-  review_kingaku:"金額見直しをしてください。観点：①物件単価・実質単価の低さとその原因（どの項目・どの月か）②見積外として請求できそうな作業（想定や見積を超えた実働など）③請求漏れ（実働はあるのに請求時間がない月・項目）④経費・外注の比率 ⑤見積の残金と残作業の釣り合い ⑥一式で金額や合計時間が未入力の項目。問題点を重要度（高・中・低）の順に、根拠の数字付きで挙げ、それぞれの改善案を示してください。数字を変えるべきものは propose_changes で変更案を出してください。"
+  review_kingaku:"金額見直しをしてください。観点：①実質単価・物件単価と目標単価の比較（案件全体と月別。差額と、目標に届かない原因になっている項目・月）②目標単価に届かせるために見積外として請求できそうな作業（想定や見積を超えた実働など）③請求漏れ（実働はあるのに請求時間がない月・項目）④経費・外注が単価を押し下げていないか ⑤見積の残金と残作業の釣り合い（このまま進めた場合の着地の単価が目標に届くか）⑥一式で金額や合計時間が未入力の項目。目標単価が未入力なら、最初にその旨を書いてください。請求単価そのものの見直しは対象外です。問題点を重要度（高・中・低）の順に、根拠の数字付きで挙げ、それぞれの改善案を示してください。数字を変えるべきものは propose_changes で変更案を出してください。"
 };
 const aiKey = () => aiScope === "one" ? (VIEW_MODE ? "v:" : "p:") + (store.current || "") : (VIEW_MODE ? "v:all" : "p:all");
 async function aiSend(text, purpose){
@@ -4160,7 +4167,7 @@ function aiRender(scrollBottom){
     body = (list.length ? list.map(aiMsgHtml).join("") : `<div class="ai-empty"><b>${aiScope === "one" ? `「${esc(one && one.info.name || "この案件")}」` : VIEW_MODE ? "全員の全案件" : "自分の全案件"}について相談できます</b>
         <p>工程・売上・単価について質問すると、データを見て答え、必要なら変更案を出します。変更案は確認してから${VIEW_MODE ? "担当者に送れます" : "［適用］できます"}。</p></div>`)
       + (aiBusy ? `<div class="ai-msg ai busy"><span class="dots"><i></i><i></i><i></i></span>データを見て考えています…</div>` : "");
-    const chips = VIEW_MODE ? ["今月、売上が見積を下回りそうな案件は？", "物件単価が低い案件と原因は？", "来週の提出期限は？"] : ["期限に間に合う？", "単価を上げるには？", "今月の請求見込みは？"];
+    const chips = VIEW_MODE ? ["今月、売上が見積を下回りそうな案件は？", "目標単価を下回っている案件と原因は？", "来週の提出期限は？"] : ["期限に間に合う？", "目標単価に届くには？", "今月の請求見込みは？"];
     const mk = aiDraftPurpose || (VIEW_MODE ? "chat_view" : "chat_personal"), mm = aiModelOf(mk);
     const modeLine = aiDraftPurpose
       ? `<div class="ai-mode"><b>${AI_LABEL[aiDraftPurpose]}</b><span>内容を確認して［送信］を押すと実行します</span><span class="ai-mm">使用モデル：${esc(mm || "（読み込み中）")}</span><button type="button" data-aidraftclear="1">取り消し</button></div>`
@@ -4287,7 +4294,7 @@ aiInit();
 /* ============================================================
    公開版（GitHub Pages）用：更新のお知らせ・ホーム画面への追加・専用リンクの表示
    ============================================================ */
-const APP_VERSION = '12';
+const APP_VERSION = '13';
 (() => {
   const isWeb = /^https?:$/.test(location.protocol);
   // 専用リンクの結果／未設定の案内
