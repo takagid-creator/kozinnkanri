@@ -869,6 +869,9 @@ body.viewmode .legend .lg-ai{display:inline-flex}
 body.ai-open main,body.ai-open .titleblock,body.ai-open nav.tabs{margin-right:calc(var(--ai-w) + 10px)}
 .ai-panel{position:fixed;top:0;right:0;bottom:0;width:var(--ai-w);max-width:100vw;background:#fff;border-left:1px solid #DCE3EC;box-shadow:-14px 0 36px rgba(15,39,71,.14);z-index:95;display:flex;flex-direction:column;animation:aiIn .35s var(--ease) both}
 .ai-panel[hidden]{display:none}
+.ai-prop.done{opacity:.72}.ai-prop b .ai-st{margin-left:8px;vertical-align:1px}
+.ai-pst{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:6px}.ai-pst small{color:#5B6B82;font-size:11.5px}
+tr.ai-sentrow{cursor:pointer}tr.ai-sentrow:hover td{background:#F4F2FF}
 .ai-prop-act{display:flex;gap:8px;align-items:center}.ai-prop-act .ai-primary{flex:1}
 .w-skip{margin:0 0 10px;padding:8px 12px;border:1px solid #F5D08A;background:#FFF8E6;border-radius:10px;font-size:12.5px;color:#7A4D00}.w-skip small{color:#8A6A2E}
 .ai-resize{position:absolute;left:-5px;top:0;bottom:0;width:10px;cursor:col-resize;z-index:2;touch-action:none}
@@ -4020,7 +4023,7 @@ function renderAiBtn(){
   }else{ pie.innerHTML = aiMiniPie(0, "—"); sub.textContent = `今月度 ${aiYen(c.usage.month.jpy)}｜上限なし`; }
   b.title = tip;
   document.querySelectorAll("[data-aimdl]").forEach(s => { const k = s.dataset.aimdl === "chat" ? (VIEW_MODE ? "chat_view" : "chat_personal") : s.dataset.aimdl; const m = aiModelOf(k); s.textContent = m ? "モデル：" + m : ""; });
-  const bd = $("#aiBadge"); if(bd){ const n = VIEW_MODE ? 0 : aiInbox.length; bd.hidden = !n; bd.textContent = n; }
+  const bd = $("#aiBadge"); if(bd){ const n = VIEW_MODE ? 0 : aiPending().length; bd.hidden = !n; bd.textContent = n; }
 }
 function renderAiView(){
   const box = $("#v-ai"); if(!box) return;
@@ -4087,6 +4090,29 @@ async function aiTest(){
 }
 
 /* ---------- 全体用 → 個人用：提案の受け渡し ---------- */
+const aiPending = () => aiInbox.filter(x => (x.status || "未対応") === "未対応");
+const aiStCls = s => s === "適用済み" ? "ok" : s === "未対応" ? "wait" : "part";
+let aiSentOpen = null;
+// 提案の中身（見出し・全体用での会話・変更案）。個人用の「届いた提案」と全体用の「送った提案」で共通
+function aiPropBody(pr, mode){
+  const d = new Date(pr.at), ro = mode === "sentview" || (pr.status && pr.status !== "未対応");
+  return `<div class="ai-prop-h"><b>${esc(pr.pname)}</b><span>${mode === "sentview" ? `${esc(pr.by)}さん → ${esc(pr.to || "（宛先なし）")}さん` : `${esc(pr.by)}さんから`}・${d.toLocaleString("ja-JP")}</span>
+      ${ro ? `<div class="ai-pst"><span class="ai-st ${aiStCls(pr.status)}">${esc(pr.status || "未対応")}</span>${pr.resultAt ? `<small>${new Date(pr.resultAt).toLocaleString("ja-JP")}</small>` : ""}${pr.result && (pr.result.applied || pr.result.skipped) ? `<small>適用${pr.result.applied || 0}・見送り${pr.result.skipped || 0}${pr.result.by ? `（${esc(pr.result.by)}）` : ""}</small>` : ""}</div>` : ""}
+      ${pr.note ? `<div class="ai-pnote">${esc(pr.note)}</div>` : ""}</div>
+    <div class="ai-sep">全体用での会話</div>${(pr.convo || []).length ? pr.convo.map(m => m.role === "user" ? `<div class="ai-msg me">${esc(m.text).replace(/\n/g, "<br>")}</div>` : `<div class="ai-msg ai">${aiMd(m.text)}</div>`).join("") : `<div class="ai-empty" style="padding:10px">会話は記録されていません</div>`}
+    ${pr.ops && pr.ops.length ? aiOpsCard(pr, 0, mode) : `<div class="ai-ops"><div class="ai-ops-h"><b>変更案（0件）</b><span>この提案には変更案が入っていませんでした。</span></div></div>`}`;
+}
+function aiRoSel(pr){         // 対応済みの提案：どれを適用したか（記録があればそのとおり）
+  const r = pr.result || {};
+  if(Array.isArray(r.sel)) return pr.ops.map((o, i) => r.sel.indexOf(i) >= 0);
+  return pr.ops.map(() => pr.status === "適用済み");
+}
+async function aiOpenSent(id){
+  aiSentOpen = {loading:true}; aiPane = "sentview"; aiRender();
+  try{ const j = await gasCall({action:"propGet", id}); const pr = j.prop; pr.sel = aiRoSel(pr); pr.state = "ro"; aiSentOpen = pr; }
+  catch(e){ aiSentOpen = {err:e.message}; }
+  aiRender(true);
+}
 async function aiLoadInbox(){
   if(VIEW_MODE || !gasUrl()) return;
   try{ const j = await gasCall({action:"propList", ids:Object.keys(store.projects)}); aiInbox = j.list || []; }catch(e){}
@@ -4114,8 +4140,11 @@ async function aiSendProposal(m, note){
   toast(`${n}件の案件の担当者に提案を送りました`);
 }
 async function aiResolveProp(pr, status, applied, skipped){
-  try{ await gasCall({action:"propResult", id:pr.id, status, detail:{applied, skipped, by:aiUser(), at:Date.now()}}); }catch(e){ toast("結果を送れませんでした：" + e.message); }
-  aiInbox = aiInbox.filter(x => x.id !== pr.id); aiOpenProp = null; aiPane = "inbox"; renderAiBtn(); aiRender();
+  const sel = status === "見送り" ? [] : (pr.sel || []).map((v, i) => v ? i : -1).filter(i => i >= 0);
+  const detail = {applied, skipped, sel, by:aiUser(), at:Date.now()};
+  try{ await gasCall({action:"propResult", id:pr.id, status, detail}); }catch(e){ toast("結果を送れませんでした：" + e.message); }
+  pr.status = status; pr.result = detail; pr.resultAt = Date.now();          // 一覧には残す（対応済みとして表示）
+  aiOpenProp = null; aiPane = "inbox"; renderAiBtn(); aiRender(); aiLoadInbox();
 }
 
 /* ---------- AI相談パネル ---------- */
@@ -4139,11 +4168,12 @@ function aiMd(t){
 }
 function aiOpsCard(m, mi, mode){
   const ops = m.ops; if(!ops || !ops.length) return "";
-  const conf = mode === "prop" ? ops.map(aiConflict) : ops.map(() => "");
+  const conf = mode === "prop" && m.state !== "ro" ? ops.map(aiConflict) : ops.map(() => "");
   const nSel = ops.filter((o, i) => m.sel[i]).length;
   const multi = new Set(ops.map(o => o.pid)).size > 1;
   let foot = "";
-  if(m.state === "applied") foot = `<div class="ai-ops-done">適用しました（${m.appliedN || 0}件）</div>`;
+  if(m.state === "ro") foot = "";
+  else if(m.state === "applied") foot = `<div class="ai-ops-done">適用しました（${m.appliedN || 0}件）</div>`;
   else if(m.state === "skipped") foot = `<div class="ai-ops-done skip">見送りました</div>`;
   else if(m.state === "sent") foot = `<div class="ai-ops-done">担当者に送りました（${m.sentTo || 1}案件）</div>`;
   else if(VIEW_MODE) foot = `<label class="ai-note-l">担当者へのひとこと（任意）<input class="ai-note" data-ainote="${mi}" maxlength="500" placeholder="例：客先に確認してから適用してください"></label>
@@ -4174,7 +4204,7 @@ function aiRender(scrollBottom){
   const keepScroll = el.querySelector(".ai-body") ? el.querySelector(".ai-body").scrollTop : 0;
   const one = P(), canOne = !VIEW_MODE || viewLoaded;
   if(aiScope === "one" && !canOne) aiScope = "all";
-  const tabs = VIEW_MODE ? [["chat", "相談"], ["sent", "送った提案"]] : [["chat", "相談"], ["inbox", `届いた提案${aiInbox.length ? `<span class="ai-cnt">${aiInbox.length}</span>` : ""}`]];
+  const tabs = VIEW_MODE ? [["chat", "相談"], ["sent", "送った提案"]] : [["chat", "相談"], ["inbox", `届いた提案${aiPending().length ? `<span class="ai-cnt">${aiPending().length}</span>` : ""}`]];
   let body = "", foot = "";
   if(aiPane === "chat"){
     const list = aiMsgs[aiKey()] || [];
@@ -4190,22 +4220,25 @@ function aiRender(scrollBottom){
       ${modeLine}
       <div class="ai-input"><textarea id="aiText" rows="${aiDraftPurpose ? 6 : 2}" placeholder="質問を入力（Ctrl+Enter で送信）" ${aiBusy ? "disabled" : ""}>${esc(aiDraft)}</textarea><div class="ai-btns"><button type="button" class="ai-clearq" data-aiclearq="1" ${aiBusy ? "disabled" : ""} title="入力欄を空にします">クリア</button><button type="button" class="ai-primary" data-aisend-q="1" ${aiBusy ? "disabled" : ""}>送信</button></div></div>`;
   }else if(aiPane === "inbox"){
-    body = aiInbox.length ? aiInbox.map((pr, i) => { const d = new Date(pr.at); return `<button type="button" class="ai-prop" data-aiprop="${i}"><b>${esc(pr.pname || "（施設名なし）")}</b><span>${esc(pr.by || "（送り主不明）")}・${d.getMonth() + 1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2, "0")}・変更案 ${pr.ops.length}件</span>${pr.note ? `<small>${esc(pr.note)}</small>` : ""}</button>`; }).join("")
+    const order = aiInbox.map((pr, i) => i).sort((a, b) => ((aiInbox[a].status || "未対応") === "未対応" ? 0 : 1) - ((aiInbox[b].status || "未対応") === "未対応" ? 0 : 1) || (aiInbox[b].at || 0) - (aiInbox[a].at || 0));
+    body = aiInbox.length ? order.map(i => { const pr = aiInbox[i], d = new Date(pr.at), st = pr.status || "未対応"; return `<button type="button" class="ai-prop${st === "未対応" ? "" : " done"}" data-aiprop="${i}"><b>${esc(pr.pname || "（施設名なし）")}<span class="ai-st ${aiStCls(st)}">${esc(st)}</span></b><span>${esc(pr.by || "（送り主不明）")}・${d.getMonth() + 1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2, "0")}・変更案 ${pr.ops.length}件</span>${pr.note ? `<small>${esc(pr.note)}</small>` : ""}</button>`; }).join("")
       : `<div class="ai-empty"><b>届いている提案はありません</b><p>全体用で管理者がAIと相談して［担当者に送る］と、ここに届きます。</p></div>`;
     foot = `<div class="ai-quick"><button type="button" data-aiv="inbox">最新の状態にする</button></div>`;
   }else if(aiPane === "prop" && aiOpenProp){
-    const pr = aiOpenProp;
-    body = `<div class="ai-prop-h"><b>${esc(pr.pname)}</b><span>${esc(pr.by)}さんから・${new Date(pr.at).toLocaleString("ja-JP")}</span>${pr.note ? `<div class="ai-pnote">${esc(pr.note)}</div>` : ""}</div>
-      <div class="ai-sep">全体用での会話</div>${(pr.convo || []).map(m => m.role === "user" ? `<div class="ai-msg me">${esc(m.text).replace(/\n/g, "<br>")}</div>` : `<div class="ai-msg ai">${aiMd(m.text)}</div>`).join("")}
-      ${pr.ops && pr.ops.length ? aiOpsCard(pr, 0, "prop") : `<div class="ai-ops"><div class="ai-ops-h"><b>変更案（0件）</b><span>この提案には変更案が入っていませんでした。全体用の「送った提案」で件数を確認するか、スプレッドシートの「AI提案」シートのI列（変更案）を確認してください。</span></div></div>`}`;
+    const pr = aiOpenProp, open = (pr.status || "未対応") === "未対応";
+    body = aiPropBody(pr, "prop");
     const nSel = (pr.ops || []).filter((o, i) => pr.sel && pr.sel[i]).length;
-    foot = `<div class="ai-prop-act">${pr.ops && pr.ops.length
+    foot = (open ? `<div class="ai-prop-act">${pr.ops && pr.ops.length
         ? `<button type="button" class="ai-primary" data-aiapply="prop" ${nSel ? "" : "disabled"}>選んだ${nSel}件を適用</button><button type="button" class="ai-sec" data-aiskip="prop">見送り</button>`
-        : `<button type="button" class="ai-sec" data-aiskip="prop">この提案を閉じる（見送り）</button>`}</div>
-      <div class="ai-quick" style="margin:8px 0 0"><button type="button" data-aiv="backinbox">← 届いた提案の一覧へ</button></div>
-      <div class="ai-ops-hint">適用・見送りのどちらかを押すと「届いた提案」の数字が消えます。</div>`;
+        : `<button type="button" class="ai-sec" data-aiskip="prop">この提案を閉じる（見送り）</button>`}</div>` : `<div class="ai-ops-hint" style="padding:0 0 4px">この提案は「${esc(pr.status)}」です（対応済みの提案は、記録として残しています）。</div>`)
+      + `<div class="ai-quick" style="margin:8px 0 0"><button type="button" data-aiv="backinbox">← 届いた提案の一覧へ</button></div>`
+      + (open ? `<div class="ai-ops-hint">適用・見送りのどちらかを押すと「届いた提案」の数字が消えます。</div>` : "");
+  }else if(aiPane === "sentview"){
+    const pr = aiSentOpen || {};
+    body = pr.loading ? `<div class="ai-empty">読み込んでいます…</div>` : pr.err ? `<div class="ai-empty">読み込めませんでした：${esc(pr.err)}</div>` : aiPropBody(pr, "sentview");
+    foot = `<div class="ai-quick"><button type="button" data-aipane="sent">← 送った提案の一覧へ</button></div>`;
   }else if(aiPane === "sent"){
-    body = aiSent === null ? `<div class="ai-empty">読み込んでいます…</div>` : aiSent.length ? `<table class="ai-tbl ai-sent"><thead><tr><th>送信</th><th>案件・宛先</th><th>状態</th></tr></thead><tbody>${aiSent.map(x => { const d = new Date(x.at); return `<tr><td>${d.getMonth() + 1}/${d.getDate()}<small>${esc(x.by)}</small></td><td>${esc(x.pname)}<small>${esc(x.to || "")}・${x.count}件</small></td><td><span class="ai-st ${x.status === "適用済み" ? "ok" : x.status === "未対応" ? "wait" : "part"}">${esc(x.status)}</span>${x.result && (x.result.applied || x.result.skipped) ? `<small>適用${x.result.applied || 0}・見送り${x.result.skipped || 0}</small>` : ""}</td></tr>`; }).join("")}</tbody></table>` : `<div class="ai-empty"><b>送った提案はまだありません</b></div>`;
+    body = aiSent === null ? `<div class="ai-empty">読み込んでいます…</div>` : aiSent.length ? `<table class="ai-tbl ai-sent"><thead><tr><th>送信</th><th>案件・宛先</th><th>状態</th></tr></thead><tbody>${aiSent.map(x => { const d = new Date(x.at); return `<tr class="ai-sentrow" data-aisentopen="${esc(x.id)}" tabindex="0" title="クリックすると、そのときの会話と変更案を表示します"><td>${d.getMonth() + 1}/${d.getDate()}<small>${esc(x.by)}</small></td><td>${esc(x.pname)}<small>${esc(x.to || "")}・${x.count}件</small></td><td><span class="ai-st ${x.status === "適用済み" ? "ok" : x.status === "未対応" ? "wait" : "part"}">${esc(x.status)}</span>${x.result && (x.result.applied || x.result.skipped) ? `<small>適用${x.result.applied || 0}・見送り${x.result.skipped || 0}</small>` : ""}</td></tr>`; }).join("")}</tbody></table>` : `<div class="ai-empty"><b>送った提案はまだありません</b></div>`;
     foot = `<div class="ai-quick"><button type="button" data-aiv="sent">最新の状態にする</button></div>`;
     if(aiSent === null) setTimeout(aiLoadSent, 0);
   }
@@ -4214,7 +4247,7 @@ function aiRender(scrollBottom){
       <span class="ai-logo" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.6L18 9.5l-4.2 1.9L12 16l-1.8-4.6L6 9.5l4.2-1.9z"/></svg></span>
       <b>AI相談</b><label class="ai-user">${VIEW_MODE ? "送り主" : "利用者"}<input id="aiUser" value="${esc(aiUser())}" maxlength="20" placeholder="名前"></label>
       <button type="button" class="ai-x" data-aiclose="1" aria-label="AI相談を閉じる">×</button></div>
-    <div class="ai-tabs">${tabs.map(([k, lb]) => `<button type="button" data-aipane="${k}" class="${aiPane === k || (aiPane === "prop" && k === "inbox") ? "on" : ""}">${lb}</button>`).join("")}</div>
+    <div class="ai-tabs">${tabs.map(([k, lb]) => `<button type="button" data-aipane="${k}" class="${aiPane === k || (aiPane === "prop" && k === "inbox") || (aiPane === "sentview" && k === "sent") ? "on" : ""}">${lb}</button>`).join("")}</div>
     ${aiPane === "chat" ? `<div class="ai-scope"><button type="button" data-aiscope="one" class="${aiScope === "one" ? "on" : ""}" ${canOne ? "" : "disabled"}>${VIEW_MODE ? "開いている案件" : "この案件"}</button><button type="button" data-aiscope="all" class="${aiScope === "all" ? "on" : ""}">${VIEW_MODE ? "全案件" : "自分の全案件"}</button>
       ${(aiMsgs[aiKey()] || []).length ? `<button type="button" class="ai-clear" data-aiv="clear">会話を消す</button>` : ""}</div>` : ""}
     ${!VIEW_MODE && last ? `<div class="ai-undo"><button type="button" data-aiundo="1">↶ 元に戻す（${esc(last.label)}）</button></div>` : ""}
@@ -4245,12 +4278,13 @@ document.addEventListener("dblclick", e => { if(e.target.closest && e.target.clo
 function aiOpenPanel(){ aiPanelOpen = true; if(!VIEW_MODE) aiLoadInbox(); aiRender(true); }
 
 document.addEventListener("click", e => {
-  const t = e.target.closest && e.target.closest("button,[data-aiop]"); if(!t) return;
+  const t = e.target.closest && e.target.closest("button,[data-aiop],[data-aisentopen]"); if(!t) return;
   const d = t.dataset;
   if(t.id === "btnAi"){ if(aiPanelOpen){ aiPanelOpen = false; aiRender(); } else aiOpenPanel(); return; }
   if(t.id === "btnAiUse"){ if(currentTab !== "ai") aiPrevTab = currentTab; show("ai"); aiLoadCfg(); return; }
   if(d.aiback){ show(aiPrevTab && aiPrevTab !== "ai" ? aiPrevTab : "home"); return; }
   if(d.aiclose){ aiPanelOpen = false; aiRender(); return; }
+  if(d.aisentopen){ aiOpenSent(d.aisentopen); return; }
   if(d.aipane){ aiPane = d.aipane; if(aiPane === "inbox") aiLoadInbox(); if(aiPane === "sent") aiSent = null; aiRender(); return; }
   if(d.aiscope){ aiScope = d.aiscope; aiRender(true); return; }
   if(d.aireview){ aiReview(d.aireview); return; }
@@ -4269,7 +4303,7 @@ document.addEventListener("click", e => {
     const pr = aiInbox[Number(d.aiprop)]; if(!pr) return;
     if(!store.projects[pr.pid]){ toast("この案件はこのアプリにありません"); return; }
     if(store.current !== pr.pid){ store.current = pr.pid; save(); renderProjSel && renderProjSel(); show(currentTab === "home" ? "kotei" : currentTab); }
-    pr.sel = pr.ops.map(o => !aiConflict(o)); pr.state = "";
+    if((pr.status || "未対応") === "未対応"){ pr.sel = pr.ops.map(o => !aiConflict(o)); pr.state = ""; } else { pr.sel = aiRoSel(pr); pr.state = "ro"; }
     aiOpenProp = pr; aiPane = "prop"; aiRender(); return;
   }
   if(d.aiapply !== undefined){
@@ -4334,7 +4368,7 @@ aiInit();
 /* ============================================================
    公開版（GitHub Pages）用：更新のお知らせ・ホーム画面への追加・専用リンクの表示
    ============================================================ */
-const APP_VERSION = '17';
+const APP_VERSION = '18';
 (() => {
   const isWeb = /^https?:$/.test(location.protocol);
   // 専用リンクの結果／未設定の案内
