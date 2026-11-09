@@ -856,6 +856,11 @@ header.bar .savestate.ng,header.bar .syncstate.ng{color:#FF9DA8}
 .ai-hgrp{display:inline-flex;align-items:center;gap:8px;margin-left:18px;flex-wrap:wrap}
 .ai-rbtn{border-color:rgba(167,155,255,.6)!important;color:#E4E0FF!important;font-weight:700}
 .ai-rbtn:hover{background:rgba(124,110,248,.25)!important}
+.ai-bl{display:inline-flex;flex-direction:column;align-items:flex-start;line-height:1.15;text-align:left}
+.ai-mdl{display:block;font-size:10px;font-weight:400;opacity:.8;white-space:nowrap;min-height:11px}
+.ai-mode{display:flex;align-items:center;flex-wrap:wrap;gap:6px;font-size:12px;color:#4C3FD0;background:#F4F2FF;border:1px solid #D9D3FB;border-radius:10px;padding:6px 10px;margin-bottom:8px}
+.ai-mode b{font-weight:700}.ai-mode .ai-mm{color:#5B6B80}.ai-mode button{margin-left:auto;border:0;background:none;color:#4C3FD0;font:inherit;font-size:12px;text-decoration:underline;cursor:pointer}
+.ai-modl{font-size:11px;color:#5B6B80;margin:0 0 6px}
 .legend .lg-ai{margin-left:auto;display:inline-flex;gap:6px}
 .legend .lg-ai button{border:1px solid #D9D3FB;background:#F4F2FF;color:#4C3FD0;border-radius:999px;padding:5px 12px;font:inherit;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s}
 .legend .lg-ai button:hover{background:#6D5DF6;color:#fff;border-color:#6D5DF6}
@@ -939,9 +944,9 @@ body.ai-open main,body.ai-open .titleblock,body.ai-open nav.tabs{margin-right:48
 <header class="bar">
   <div class="hgrp">
   <h1>個人用工程請求管理</h1>
-  <span class="ai-hgrp"><button class="hbtn ai-hbtn" id="btnAi" type="button" title="AI（Claude）に工程・売上・単価を相談します"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.6L18 9.5l-4.2 1.9L12 16l-1.8-4.6L6 9.5l4.2-1.9z"/></svg>AI相談<span class="ai-badge" id="aiBadge" hidden></span></button>
-  <button class="hbtn ai-rbtn" type="button" data-aireview="review_kotei" title="この案件の工程をAIが点検し、問題点と改善案を出します">AI工程見直し</button>
-  <button class="hbtn ai-rbtn" type="button" data-aireview="review_kingaku" title="この案件の金額・単価をAIが点検し、問題点と改善案を出します">AI金額見直し</button>
+  <span class="ai-hgrp"><button class="hbtn ai-hbtn" id="btnAi" type="button" title="AI（Claude）に工程・売上・単価を相談します"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.6L18 9.5l-4.2 1.9L12 16l-1.8-4.6L6 9.5l4.2-1.9z"/></svg><span class="ai-bl"><span>AI相談<span class="ai-badge" id="aiBadge" hidden></span></span><small class="ai-mdl" data-aimdl="chat"></small></span></button>
+  <button class="hbtn ai-rbtn" type="button" data-aireview="review_kotei" title="工程見直しの文面を入力欄に入れます（［送信］で実行）"><span class="ai-bl"><span>AI工程見直し</span><small class="ai-mdl" data-aimdl="review_kotei"></small></span></button>
+  <button class="hbtn ai-rbtn" type="button" data-aireview="review_kingaku" title="金額見直しの文面を入力欄に入れます（［送信］で実行）"><span class="ai-bl"><span>AI金額見直し</span><small class="ai-mdl" data-aimdl="review_kingaku"></small></span></button>
   <button class="hbtn ai-usebtn" id="btnAiUse" type="button" title="AI・API関連"><span id="aiPie"></span><span class="ai-t"><b>AI・API関連</b><small id="aiSub">—</small></span></button></span>
   </div>
   <div class="hgrp right">
@@ -3742,7 +3747,7 @@ const AI_TOOL = {
     }, required:["kind","reason"]}}
   }, required:["summary","changes"]}
 };
-let aiCfg = null, aiPanelOpen = false, aiBusy = false, aiPane = "chat", aiDraft = "", aiOpenProp = null;
+let aiCfg = null, aiPanelOpen = false, aiBusy = false, aiPane = "chat", aiDraft = "", aiDraftPurpose = "", aiOpenProp = null;
 let aiScope = VIEW_MODE ? "all" : "one";
 const aiMsgs = {};            // 会話（案件ごと／全案件）。このブラウザを閉じるまで保持
 let aiInbox = [], aiSent = null, aiUndo = [], viewAll = null, viewAllAt = 0, aiPrevTab = "home";
@@ -3930,7 +3935,7 @@ async function aiSend(text, purpose){
   try{ aiBusy = true; aiRender(); ctx = await aiContext(); }
   catch(err){ aiBusy = false; toast(err.message); aiRender(); return; }
   list.push({role:"user", text, purpose:purpose || "", at:Date.now()});
-  aiDraft = ""; aiRender(true);
+  aiDraft = ""; aiDraftPurpose = ""; aiRender(true);
   try{
     const hist = list.filter(m => !m.err).slice(-16).map(m => ({role:m.role,
       content:m.role === "assistant" && m.ops && m.ops.length ? m.text + "\n\n（このとき出した変更案：" + m.ops.map(aiOpText).join("／") + "）" : m.text}));
@@ -3953,10 +3958,20 @@ async function aiSend(text, purpose){
   }catch(err){ list.push({role:"assistant", text:"エラー：" + err.message, err:true, at:Date.now()}); }
   aiBusy = false; aiRender(true);
 }
+/* 見直しボタン：すぐには実行せず、入力欄に文面を入れる。［送信］を押すと実行する */
 function aiReview(purpose){
   aiOpenPanel(); aiPane = "chat";
   if(VIEW_MODE && !viewLoaded) aiScope = "all";
-  aiSend(AI_REVIEW[purpose], purpose);
+  aiDraft = AI_REVIEW[purpose]; aiDraftPurpose = purpose;
+  aiRender(true);
+  const ta = $("#aiText"); if(ta){ ta.focus({preventScroll:true}); ta.setSelectionRange(ta.value.length, ta.value.length); }
+}
+const AI_LABEL = {review_kotei:"工程見直し", review_kingaku:"金額見直し"};
+const aiModelOf = k => { const c = aiCfg && aiCfg.purposes && aiCfg.purposes.find(x => x.key === k); return c ? modelName(c.model).replace(/^Claude /, "") : ""; };
+function aiSendDraft(){
+  const ta = $("#aiText"); const v = ta ? ta.value : aiDraft;
+  const pu = aiDraftPurpose && String(v).trim() ? aiDraftPurpose : "";
+  aiSend(v, pu);
 }
 
 /* ---------- 使用量・設定（各種設定シート） ---------- */
@@ -3984,6 +3999,7 @@ function renderAiBtn(){
     b.classList.toggle("ng", raw >= 100);
   }else{ pie.innerHTML = aiMiniPie(0, "—"); sub.textContent = `今月度 ${aiYen(c.usage.month.jpy)}｜上限なし`; }
   b.title = tip;
+  document.querySelectorAll("[data-aimdl]").forEach(s => { const k = s.dataset.aimdl === "chat" ? (VIEW_MODE ? "chat_view" : "chat_personal") : s.dataset.aimdl; const m = aiModelOf(k); s.textContent = m ? "モデル：" + m : ""; });
   const bd = $("#aiBadge"); if(bd){ const n = VIEW_MODE ? 0 : aiInbox.length; bd.hidden = !n; bd.textContent = n; }
 }
 function renderAiView(){
@@ -4121,7 +4137,11 @@ function aiOpsCard(m, mi, mode){
     ${foot}</div>`;
 }
 function aiMsgHtml(m, mi){
-  if(m.role === "user") return `<div class="ai-msg me">${m.purpose && AI_REVIEW[m.purpose] ? `<b>${m.purpose === "review_kotei" ? "工程見直し" : "金額見直し"}</b>` : esc(m.text).replace(/\n/g, "<br>")}</div>`;
+  if(m.role === "user"){
+    const base = m.purpose && AI_REVIEW[m.purpose];
+    if(base && m.text.indexOf(base) === 0){ const rest = m.text.slice(base.length).trim(); return `<div class="ai-msg me"><b>${AI_LABEL[m.purpose]}</b>${rest ? "<br>" + esc(rest).replace(/\n/g, "<br>") : ""}</div>`; }
+    return `<div class="ai-msg me">${esc(m.text).replace(/\n/g, "<br>")}</div>`;
+  }
   const u = m.usage && m.usage.model ? `<div class="ai-use">${esc(modelName(m.usage.model))}・入力 ${aiN(m.usage.input)}／出力 ${aiN(m.usage.output)}・約${aiYen(m.usage.jpy)}</div>` : "";
   return `<div class="ai-msg ai${m.err ? " err" : ""}">${aiMd(m.text)}${aiOpsCard(m, mi, "chat")}${u}</div>`;
 }
@@ -4140,8 +4160,13 @@ function aiRender(scrollBottom){
         <p>工程・売上・単価について質問すると、データを見て答え、必要なら変更案を出します。変更案は確認してから${VIEW_MODE ? "担当者に送れます" : "［適用］できます"}。</p></div>`)
       + (aiBusy ? `<div class="ai-msg ai busy"><span class="dots"><i></i><i></i><i></i></span>データを見て考えています…</div>` : "");
     const chips = VIEW_MODE ? ["今月、売上が見積を下回りそうな案件は？", "物件単価が低い案件と原因は？", "来週の提出期限は？"] : ["期限に間に合う？", "単価を上げるには？", "今月の請求見込みは？"];
+    const mk = aiDraftPurpose || (VIEW_MODE ? "chat_view" : "chat_personal"), mm = aiModelOf(mk);
+    const modeLine = aiDraftPurpose
+      ? `<div class="ai-mode"><b>${AI_LABEL[aiDraftPurpose]}</b><span>内容を確認して［送信］を押すと実行します</span><span class="ai-mm">使用モデル：${esc(mm || "（読み込み中）")}</span><button type="button" data-aidraftclear="1">取り消し</button></div>`
+      : `<div class="ai-modl">相談のモデル：${esc(mm || "（読み込み中）")}｜見直しは「${esc(aiModelOf("review_kotei") || "—")}」（工程）・「${esc(aiModelOf("review_kingaku") || "—")}」（金額）</div>`;
     foot = `<div class="ai-quick"><button type="button" data-aireview="review_kotei">工程見直し</button><button type="button" data-aireview="review_kingaku">金額見直し</button>${chips.map(c => `<button type="button" class="chip" data-aichip="${esc(c)}">${esc(c)}</button>`).join("")}</div>
-      <div class="ai-input"><textarea id="aiText" rows="2" placeholder="質問を入力（Ctrl+Enter で送信）" ${aiBusy ? "disabled" : ""}>${esc(aiDraft)}</textarea><button type="button" class="ai-primary" data-aisend-q="1" ${aiBusy ? "disabled" : ""}>送信</button></div>`;
+      ${modeLine}
+      <div class="ai-input"><textarea id="aiText" rows="${aiDraftPurpose ? 6 : 2}" placeholder="質問を入力（Ctrl+Enter で送信）" ${aiBusy ? "disabled" : ""}>${esc(aiDraft)}</textarea><button type="button" class="ai-primary" data-aisend-q="1" ${aiBusy ? "disabled" : ""}>送信</button></div>`;
   }else if(aiPane === "inbox"){
     body = aiInbox.length ? aiInbox.map((pr, i) => { const d = new Date(pr.at); return `<button type="button" class="ai-prop" data-aiprop="${i}"><b>${esc(pr.pname || "（施設名なし）")}</b><span>${esc(pr.by || "（送り主不明）")}・${d.getMonth() + 1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2, "0")}・変更案 ${pr.ops.length}件</span>${pr.note ? `<small>${esc(pr.note)}</small>` : ""}</button>`; }).join("")
       : `<div class="ai-empty"><b>届いている提案はありません</b><p>全体用で管理者がAIと相談して［担当者に送る］と、ここに届きます。</p></div>`;
@@ -4183,7 +4208,8 @@ document.addEventListener("click", e => {
   if(d.aiscope){ aiScope = d.aiscope; aiRender(true); return; }
   if(d.aireview){ aiReview(d.aireview); return; }
   if(d.aichip){ aiSend(d.aichip); return; }
-  if(d.aisendQ){ const ta = $("#aiText"); aiSend(ta ? ta.value : ""); return; }
+  if(d.aisendQ){ aiSendDraft(); return; }
+  if(d.aidraftclear){ aiDraft = ""; aiDraftPurpose = ""; aiRender(); return; }
   if(d.aiundo){ aiUndoLast(); return; }
   if(d.aiv === "reload"){ aiLoadCfg(); return; }
   if(d.aiv === "test"){ aiTest(); return; }
@@ -4223,9 +4249,9 @@ document.addEventListener("change", e => {
   }
   if(c.id === "aiUser"){ lsSet("ai_user", c.value.trim()); }
 });
-document.addEventListener("input", e => { if(e.target.id === "aiText") aiDraft = e.target.value; });
+document.addEventListener("input", e => { if(e.target.id === "aiText"){ aiDraft = e.target.value; if(!aiDraft.trim() && aiDraftPurpose){ aiDraftPurpose = ""; aiRender(); const t = $("#aiText"); if(t) t.focus({preventScroll:true}); } } });
 document.addEventListener("keydown", e => {
-  if(e.target.id === "aiText" && e.key === "Enter" && (e.ctrlKey || e.metaKey)){ e.preventDefault(); aiSend(e.target.value); }
+  if(e.target.id === "aiText" && e.key === "Enter" && (e.ctrlKey || e.metaKey)){ e.preventDefault(); aiDraft = e.target.value; aiSendDraft(); }
   if(e.key === "Escape" && aiPanelOpen && !gDrag && !(e.target.closest && e.target.closest("#aiPanel textarea"))){ /* パネルは Esc では閉じない（入力中の誤操作防止） */ }
 });
 function aiInit(){
@@ -4260,7 +4286,7 @@ aiInit();
 /* ============================================================
    公開版（GitHub Pages）用：更新のお知らせ・ホーム画面への追加・専用リンクの表示
    ============================================================ */
-const APP_VERSION = '9';
+const APP_VERSION = '10';
 (() => {
   const isWeb = /^https?:$/.test(location.protocol);
   // 専用リンクの結果／未設定の案内
