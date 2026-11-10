@@ -537,7 +537,7 @@ body.g-dragging,body.g-dragging *{cursor:ew-resize!important;user-select:none!im
 .g-handles{display:inline-flex;gap:4px;margin-left:10px;vertical-align:-3px;pointer-events:auto}
 .g-h{border:1.5px solid #6D5DF6;background:#fff;color:#4C3FD0;border-radius:999px;padding:0 9px;height:20px;font:inherit;font-size:11px;font-weight:700;cursor:ew-resize;touch-action:none;white-space:nowrap;box-shadow:0 2px 6px rgba(76,63,208,.18)}
 .g-h:hover{background:#6D5DF6;color:#fff}
-.g-band{position:fixed;z-index:10000;border:1.5px dashed #6D5DF6;background:rgba(109,93,246,.10);pointer-events:none;border-radius:3px}
+.g-lasso{position:fixed;z-index:10000;border:1.5px solid #4C3FD0;background:rgba(109,93,246,.07);box-shadow:0 0 0 1px rgba(255,255,255,.9),0 4px 14px rgba(76,63,208,.18);pointer-events:none;border-radius:4px}
 body.g-banding,body.g-banding *{cursor:crosshair!important;user-select:none!important}
 .g-end.done .g-prg{color:#8A96A8;font-weight:400}
 .g-end.late{color:#F08C00}
@@ -1979,7 +1979,7 @@ let gBand = null;
 function gBandStart(e){
   if(!gSel){ toast("先に起点の項目（長丸）をクリックしてから、Shift＋ドラッグで囲んでください"); return; }
   e.preventDefault();
-  const el = document.createElement("div"); el.className = "g-band"; document.body.appendChild(el);
+  const el = document.createElement("div"); el.className = "g-lasso"; document.body.appendChild(el);
   gBand = {x0:e.clientX, y0:e.clientY, el, r:null};
   document.body.classList.add("g-banding"); gBandDraw(e);
 }
@@ -4468,7 +4468,7 @@ aiInit();
 /* ============================================================
    公開版（GitHub Pages）用：更新のお知らせ・ホーム画面への追加・専用リンクの表示
    ============================================================ */
-const APP_VERSION = '20';
+const APP_VERSION = '21';
 (() => {
   const isWeb = /^https?:$/.test(location.protocol);
   // 専用リンクの結果／未設定の案内
