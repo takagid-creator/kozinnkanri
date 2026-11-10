@@ -534,6 +534,11 @@ body.g-dragging,body.g-dragging *{cursor:ew-resize!important;user-select:none!im
 .g-tag.done{background:#6B7885} .g-tag.late{background:#F08C00;font-weight:700}
 .g-end{position:absolute;top:7px;margin-left:5px;padding:0 3px;border-radius:3px;font-size:11px;line-height:16px;font-weight:700;color:#0F2747;white-space:nowrap;background:rgba(255,255,255,.75);pointer-events:none;z-index:2}
 .g-end .g-prg{margin-left:8px;font-weight:700;color:#5B4CE0}
+.g-handles{display:inline-flex;gap:4px;margin-left:10px;vertical-align:-3px;pointer-events:auto}
+.g-h{border:1.5px solid #6D5DF6;background:#fff;color:#4C3FD0;border-radius:999px;padding:0 9px;height:20px;font:inherit;font-size:11px;font-weight:700;cursor:ew-resize;touch-action:none;white-space:nowrap;box-shadow:0 2px 6px rgba(76,63,208,.18)}
+.g-h:hover{background:#6D5DF6;color:#fff}
+.g-band{position:fixed;z-index:10000;border:1.5px dashed #6D5DF6;background:rgba(109,93,246,.10);pointer-events:none;border-radius:3px}
+body.g-banding,body.g-banding *{cursor:crosshair!important;user-select:none!important}
 .g-end.done .g-prg{color:#8A96A8;font-weight:400}
 .g-end.late{color:#F08C00}
 .g-end.done{color:#8A96A8;font-weight:400}
@@ -1808,10 +1813,11 @@ function renderGantt(D){
       <span><i style="background:#8A96A8"></i>完了</span><span><i style="outline:2px solid #F08C00;background:#fff"></i>遅れ（完了予定日を過ぎて未完了）</span><span>バーの左＝（作業者・）開始日、右＝<b style="font-size:11px;color:#0F2747">完了予定日</b>（過ぎて未完了はオレンジ、完了はグレー）</span>
       <span><i style="width:0;height:12px;border-left:1px dotted #9FB0C2;border-radius:0;background:none"></i>10日・20日の目印（20日＝請求の締め日）</span>
       <span><i style="width:2px;background:#F08C00"></i>今日（${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()}）</span>
-      ${VIEW_MODE ? "" : gEdit ? `<span style="color:#4C3FD0;font-weight:700">工程編集モード：バーをクリック＝その項目と連動項目（未完了・同じ作業者・その項目の開始日以降に始まる項目）を選択／Shift+クリック＝連動から外す・戻す／ドラッグ＝選択中をまとめてずらす／選択した項目の左端（→）＝開始日だけ・右端（←）＝完了予定日だけを動かす／Esc＝選択解除</span>` : ""}
+      ${VIEW_MODE ? "" : gEdit ? `<span style="color:#4C3FD0;font-weight:700">工程編集モード：バーをクリック＝その項目と連動項目（未完了・同じ作業者・その項目の開始日以降に始まる項目）を選択／Shift+クリック＝連動から外す・戻す／ドラッグ＝選択中をまとめてずらす／選択した項目の右横の［⇔ 期間］［→ 開始日］［← 完了日］を左右にドラッグして変更／Shift＋長丸以外をドラッグ＝四角で囲んだ項目を連動の対象に入れる・外す／Esc＝選択解除</span>` : ""}
       ${inRange ? "" : `<span style="color:#F08C00;font-weight:700">今日は工程表の期間外です</span>`}</div>`;
   box.innerHTML = `${legendHtml}<div class="gscroll"><div class="gantt${gEdit ? " editing" : ""}" data-gk="${k}">${head}${body}<div class="g-over">${grid}${tLine}</div></div></div>`;
   const sc = box.querySelector(".gscroll");
+  gHandles();
   if(sc){
     if(keepLeft !== null) sc.scrollLeft = keepLeft;
     else if(inRange){                       // 最初は、今日の位置が見える所までスクロールしておく
@@ -1853,12 +1859,21 @@ function gSelect(id, full = true){ gSel = {anchor:id, ids:[id, ...gLinked(id)]};
 function gPaintSel(full = true){
   if(full) gToolbar();
   $$("#gantt .g-bar").forEach(el => { const id = el.dataset.gm; el.classList.toggle("g-selA", !!gSel && gSel.anchor === id); el.classList.toggle("g-sel", !!gSel && gSel.anchor !== id && gSel.ids.includes(id)); });
+  gHandles();
 }
 // 選択した項目（起点）のバーの端：左端＝開始日（→）、右端＝完了予定日（←）
 function gEdgeOf(bar, x){
   if(!gSel || gSel.anchor !== bar.dataset.gbar) return "";
   const r = bar.getBoundingClientRect(), z = Math.min(9, r.width / 3);
   return x <= r.left + z ? "s" : x >= r.right - z ? "e" : "";
+}
+// 選択した項目（起点）の長丸の右横に「期間」「開始日」「完了日」のつまみを出す
+function gHandles(){
+  $$("#gantt .g-handles").forEach(x => x.remove());
+  if(VIEW_MODE || !gEdit || !gSel) return;
+  const bar = document.querySelector(`#gantt .g-bar[data-gbar="${gSel.anchor}"]`), end = document.querySelector(`#gantt .g-end[data-gm="${gSel.anchor}"]`);
+  if(!bar || !end) return;
+  end.insertAdjacentHTML("beforeend", `<span class="g-handles"><button type="button" class="g-h" data-gh="m" title="左右にドラッグ：期間ごとずらす（連動する項目も一緒）">⇔ 期間</button><button type="button" class="g-h" data-gh="s" title="左右にドラッグ：開始日だけを動かす">→ 開始日</button><button type="button" class="g-h" data-gh="e" title="左右にドラッグ：完了日だけを動かす">← 完了日</button></span>`);
 }
 function gPreview(dd){
   if(!gDrag) return;
@@ -1925,18 +1940,20 @@ function gEnd(commit){
   save(); if(RENDER.kotei) RENDER.kotei(); refresh();
 }
 document.addEventListener("pointerdown", e => {
-  const bar = e.target.closest && e.target.closest(".g-bar[data-gbar]");
-  if(!bar || VIEW_MODE || !gEdit || e.button !== 0) return;
+  if(VIEW_MODE || !gEdit || e.button !== 0 || !e.target.closest) return;
+  const hd = e.target.closest("#gantt [data-gh]");
+  const bar = hd ? (gSel && document.querySelector(`#gantt .g-bar[data-gbar="${gSel.anchor}"]`)) : e.target.closest(".g-bar[data-gbar]");
+  if(!bar){ if(e.shiftKey && e.target.closest("#gantt .gantt")) gBandStart(e); return; }
   const gantt = bar.closest(".gantt"), track = bar.closest(".g-track"); if(!gantt || !track) return;
   e.preventDefault();
   const id = bar.dataset.gbar;
-  if(e.shiftKey){                                       // Shift+クリック：連動から外す・戻す
+  if(e.shiftKey && !hd){                                       // Shift+クリック：連動から外す・戻す
     if(!gSel){ gSelect(id); return; }
     if(gSel.anchor === id){ toast("起点の項目は外せません（別の項目をクリックすると選び直せます）"); return; }
     gSel.ids = gSel.ids.includes(id) ? gSel.ids.filter(x => x !== id) : [...gSel.ids, id];
     gPaintSel(); return;
   }
-  const edge = gEdgeOf(bar, e.clientX);
+  const edge = hd ? (hd.dataset.gh === "m" ? "" : hd.dataset.gh) : gEdgeOf(bar, e.clientX);
   if(edge){                                            // 起点の項目の端をつかんだ：開始日だけ／完了予定日だけを動かす
     const tr = track.getBoundingClientRect(), br = bar.getBoundingClientRect();
     const els = [...gantt.querySelectorAll(`[data-gm="${id}"]`)];
@@ -1957,6 +1974,37 @@ document.addEventListener("pointerdown", e => {
   document.body.classList.add("g-dragging");
   gPreview(0);
 });
+/* Shift を押しながら長丸以外をドラッグ：四角で囲んだ長丸の項目を、連動の対象に入れる／対象から外す */
+let gBand = null;
+function gBandStart(e){
+  if(!gSel){ toast("先に起点の項目（長丸）をクリックしてから、Shift＋ドラッグで囲んでください"); return; }
+  e.preventDefault();
+  const el = document.createElement("div"); el.className = "g-band"; document.body.appendChild(el);
+  gBand = {x0:e.clientX, y0:e.clientY, el, r:null};
+  document.body.classList.add("g-banding"); gBandDraw(e);
+}
+function gBandDraw(e){
+  const b = gBand, l = Math.min(b.x0, e.clientX), t = Math.min(b.y0, e.clientY), w = Math.abs(e.clientX - b.x0), h = Math.abs(e.clientY - b.y0);
+  Object.assign(b.el.style, {left:l + "px", top:t + "px", width:w + "px", height:h + "px"});
+  b.r = {l, t, r:l + w, b:t + h};
+  $$("#gantt .g-bar[data-gbar]").forEach(bar => bar.classList.toggle("g-moving", gBandHit(bar)));
+}
+function gBandHit(bar){ const r = gBand && gBand.r, q = bar.getBoundingClientRect(); return !!r && q.right >= r.l && q.left <= r.r && q.bottom >= r.t && q.top <= r.b; }
+function gBandEnd(commit){
+  const b = gBand; if(!b) return;
+  const hit = commit ? $$("#gantt .g-bar[data-gbar]").filter(gBandHit).map(x => x.dataset.gbar).filter(id => id !== gSel.anchor) : [];
+  gBand = null; b.el.remove(); document.body.classList.remove("g-banding");
+  $$("#gantt .g-bar.g-moving").forEach(x => x.classList.remove("g-moving"));
+  if(!hit.length){ if(commit) toast("囲んだ中に、対象にできる長丸がありません（起点の項目と完了した項目は対象外）"); return; }
+  const add = hit.some(id => !gSel.ids.includes(id));      // 1つでも対象外が入っていれば「対象に入れる」、全部対象なら「対象から外す」
+  gSel.ids = add ? [...new Set([...gSel.ids, ...hit])] : gSel.ids.filter(id => !hit.includes(id));
+  gPaintSel();
+  toast(`${hit.length} 項目を連動の${add ? "対象に入れました" : "対象から外しました"}（選択中 ${gSel.ids.length} 項目）`);
+}
+document.addEventListener("pointermove", e => { if(gBand) gBandDraw(e); });
+document.addEventListener("pointerup", () => { if(gBand) gBandEnd(true); });
+document.addEventListener("pointercancel", () => { if(gBand) gBandEnd(false); });
+document.addEventListener("keydown", e => { if(gBand && e.key === "Escape"){ e.preventDefault(); gBandEnd(false); } });
 document.addEventListener("pointermove", e => {
   if(!gDrag && gEdit){
     const bar = e.target.closest && e.target.closest(".g-bar[data-gbar]");
@@ -4420,7 +4468,7 @@ aiInit();
 /* ============================================================
    公開版（GitHub Pages）用：更新のお知らせ・ホーム画面への追加・専用リンクの表示
    ============================================================ */
-const APP_VERSION = '19';
+const APP_VERSION = '20';
 (() => {
   const isWeb = /^https?:$/.test(location.protocol);
   // 専用リンクの結果／未設定の案内
