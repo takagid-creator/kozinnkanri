@@ -501,6 +501,10 @@ label.donechk input{width:16px;height:16px;margin:0;accent-color:#6B7885}
 .g-bar.late{outline:2px solid #F08C00;outline-offset:1px}
 .g-bar.drag{cursor:ew-resize;touch-action:none}
 .g-bar.drag:hover{box-shadow:0 0 0 2px rgba(109,93,246,.35)}
+.g-bar.g-edge-s{cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='18'%3E%3Cpath d='M2 9h18M14 3l6 6-6 6' fill='none' stroke='white' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M2 9h18M14 3l6 6-6 6' fill='none' stroke='%230F2747' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") 13 9,e-resize}
+.g-bar.g-edge-e{cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='18'%3E%3Cpath d='M24 9H6M12 3L6 9l6 6' fill='none' stroke='white' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M24 9H6M12 3L6 9l6 6' fill='none' stroke='%230F2747' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") 13 9,w-resize}
+body.g-dragging.g-rs-s,body.g-dragging.g-rs-s *{cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='18'%3E%3Cpath d='M2 9h18M14 3l6 6-6 6' fill='none' stroke='white' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M2 9h18M14 3l6 6-6 6' fill='none' stroke='%230F2747' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") 13 9,e-resize!important}
+body.g-dragging.g-rs-e,body.g-dragging.g-rs-e *{cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='18'%3E%3Cpath d='M24 9H6M12 3L6 9l6 6' fill='none' stroke='white' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M24 9H6M12 3L6 9l6 6' fill='none' stroke='%230F2747' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") 13 9,w-resize!important}
 .g-moving{transition:none!important;z-index:3}
 .g-bar.g-moving{box-shadow:0 0 0 2px #6D5DF6,0 4px 12px rgba(109,93,246,.35)}
 body.g-dragging,body.g-dragging *{cursor:ew-resize!important;user-select:none!important}
@@ -1790,7 +1794,7 @@ function renderGantt(D){
       const dg = !VIEW_MODE && gEdit && !done;   // 工程編集モードのとき、未完了のバーだけ選択・ドラッグできる
       const sc = gSel && gSel.ids.includes(it.id) ? (gSel.anchor === it.id ? " g-selA" : " g-sel") : "";
       bar += `<span class="g-lead" data-gm="${it.id}" style="right:calc(${(100 - pn(a)).toFixed(3)}% + 4px)">${who ? `<span class="g-who" title="作業者">${esc(who)}</span>` : ""}<span class="g-start" title="開始日">${md(s)}</span></span>`;
-      bar += `<div class="g-bar${done ? " done" : ""}${late ? " late" : ""}${dg ? " drag" + sc : ""}" data-gm="${it.id}"${dg ? ` data-gbar="${it.id}" data-s0="${dayIso(s)}" data-e0="${dayIso(e)}"` : ""} style="left:${pct(a)};width:${((b - a + 1) * k).toFixed(3)}%" title="${esc(tip)}${dg ? "\nクリック：この項目と連動する項目を選択／Shift+クリック：連動から外す・戻す／ドラッグ：選択中の項目をまとめて1日単位でずらす" : ""}"><i style="width:${fill}%"></i></div>`;
+      bar += `<div class="g-bar${done ? " done" : ""}${late ? " late" : ""}${dg ? " drag" + sc : ""}" data-gm="${it.id}"${dg ? ` data-gbar="${it.id}" data-s0="${dayIso(s)}" data-e0="${dayIso(e)}"` : ""} style="left:${pct(a)};width:${((b - a + 1) * k).toFixed(3)}%" title="${esc(tip)}${dg ? "\nクリック：この項目と連動する項目を選択／Shift+クリック：連動から外す・戻す／ドラッグ：選択中の項目をまとめて1日単位でずらす／選択した項目の左端（→）：開始日だけ、右端（←）：完了予定日だけを動かす" : ""}"><i style="width:${fill}%"></i></div>`;
       // バーの右：完了予定日（○/○）
       bar += `<span class="g-end${done ? " done" : late ? " late" : ""}" data-gm="${it.id}" style="left:${pct(b + 1)}" title="完了予定日と進捗">${md(e)}${isNum(prg) ? `<span class="g-prg">進捗 ${Math.round(prg * 100)}%</span>` : ""}</span>`;
     }
@@ -1804,7 +1808,7 @@ function renderGantt(D){
       <span><i style="background:#8A96A8"></i>完了</span><span><i style="outline:2px solid #F08C00;background:#fff"></i>遅れ（完了予定日を過ぎて未完了）</span><span>バーの左＝（作業者・）開始日、右＝<b style="font-size:11px;color:#0F2747">完了予定日</b>（過ぎて未完了はオレンジ、完了はグレー）</span>
       <span><i style="width:0;height:12px;border-left:1px dotted #9FB0C2;border-radius:0;background:none"></i>10日・20日の目印（20日＝請求の締め日）</span>
       <span><i style="width:2px;background:#F08C00"></i>今日（${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()}）</span>
-      ${VIEW_MODE ? "" : gEdit ? `<span style="color:#4C3FD0;font-weight:700">工程編集モード：バーをクリック＝その項目と連動項目（未完了・同じ作業者・その項目の開始日以降に始まる項目）を選択／Shift+クリック＝連動から外す・戻す／ドラッグ＝選択中をまとめてずらす／Esc＝選択解除</span>` : ""}
+      ${VIEW_MODE ? "" : gEdit ? `<span style="color:#4C3FD0;font-weight:700">工程編集モード：バーをクリック＝その項目と連動項目（未完了・同じ作業者・その項目の開始日以降に始まる項目）を選択／Shift+クリック＝連動から外す・戻す／ドラッグ＝選択中をまとめてずらす／選択した項目の左端（→）＝開始日だけ・右端（←）＝完了予定日だけを動かす／Esc＝選択解除</span>` : ""}
       ${inRange ? "" : `<span style="color:#F08C00;font-weight:700">今日は工程表の期間外です</span>`}</div>`;
   box.innerHTML = `${legendHtml}<div class="gscroll"><div class="gantt${gEdit ? " editing" : ""}" data-gk="${k}">${head}${body}<div class="g-over">${grid}${tLine}</div></div></div>`;
   const sc = box.querySelector(".gscroll");
@@ -1850,8 +1854,29 @@ function gPaintSel(full = true){
   if(full) gToolbar();
   $$("#gantt .g-bar").forEach(el => { const id = el.dataset.gm; el.classList.toggle("g-selA", !!gSel && gSel.anchor === id); el.classList.toggle("g-sel", !!gSel && gSel.anchor !== id && gSel.ids.includes(id)); });
 }
+// 選択した項目（起点）のバーの端：左端＝開始日（→）、右端＝完了予定日（←）
+function gEdgeOf(bar, x){
+  if(!gSel || gSel.anchor !== bar.dataset.gbar) return "";
+  const r = bar.getBoundingClientRect(), z = Math.min(9, r.width / 3);
+  return x <= r.left + z ? "s" : x >= r.right - z ? "e" : "";
+}
 function gPreview(dd){
   if(!gDrag) return;
+  if(gDrag.mode){                                      // 開始日だけ／完了予定日だけを動かす
+    const g = gDrag, days = dateNo(g.e0) - dateNo(g.s0);
+    dd = g.mode === "s" ? Math.min(dd, days) : Math.max(dd, -days); g.dd = dd;      // 開始日は完了予定日を越えない
+    const px = dd * g.dayPx;
+    if(g.mode === "s"){ g.bar.style.left = (g.L + px) + "px"; g.bar.style.width = Math.max(2, g.W - px) + "px"; }
+    else g.bar.style.width = Math.max(2, g.W + px) + "px";
+    g.els.forEach(el => { if(el === g.bar) return; const lead = el.classList.contains("g-lead");
+      el.style.transform = (g.mode === "s" ? lead : !lead) && dd ? `translateX(${px}px)` : ""; });
+    const s1 = dateNo(g.s0) + (g.mode === "s" ? dd : 0), e1 = dateNo(g.e0) + (g.mode === "e" ? dd : 0);
+    g.els.forEach(el => { const st = el.querySelector && el.querySelector(".g-start"); if(st && g.mode === "s") st.textContent = md(s1);
+      if(el.classList.contains("g-end") && g.mode === "e" && el.firstChild && el.firstChild.nodeType === 3) el.firstChild.nodeValue = md(e1); });
+    g.tip.textContent = g.mode === "s" ? `開始日 ${md(dateNo(g.s0))} → ${md(s1)}（期間 ${e1 - s1 + 1}日）` : `完了予定日 ${md(dateNo(g.e0))} → ${md(e1)}（期間 ${e1 - s1 + 1}日）`;
+    const r = g.bar.getBoundingClientRect(); g.tip.style.left = (r.left + r.width / 2) + "px"; g.tip.style.top = (r.top - 8) + "px";
+    return;
+  }
   const px = dd * gDrag.dayPx;
   gDrag.els.forEach(el => { el.style.transform = dd ? `translateX(${px}px)` : ""; });
   const t = gDrag.tip;
@@ -1875,9 +1900,20 @@ function gUndoLast(){
 function gEnd(commit){
   const g = gDrag; if(!g) return; gDrag = null;
   document.body.classList.remove("g-dragging");
+  document.body.classList.remove("g-rs-s", "g-rs-e");
   g.tip.remove(); g.els.forEach(el => { el.style.transform = ""; el.classList.remove("g-moving"); });
+  if(g.mode){ g.bar.style.left = g.left0; g.bar.style.width = g.width0; }
   if(!commit || !g.dd){ gToolbar(); return; }   // クリックだけ（ずらしていない）なら、右上の「選択中 ○項目」を更新するだけ
   const p = P(), info = p.info, base = itemById(g.id); if(!base) return;
+  if(g.mode){                                          // 開始日だけ／完了予定日だけ（期間が変わる。連動項目は動かさない）
+    const f = g.mode === "s" ? "workStart" : "due", from = g.mode === "s" ? g.s0 : g.e0, to = isoAdd(from, g.dd);
+    gPushUndo(`${base.name} の${g.mode === "s" ? "開始日" : "完了予定日"} ${g.dd > 0 ? "+" : ""}${g.dd}日`);
+    if(!base.workStart) base.workStart = g.s0;        // 空欄（基本データの日付を使用）だった側も、今の日付で確定させる
+    if(!base.due) base.due = g.e0;
+    base[f] = to;
+    toast(`${base.name} の${g.mode === "s" ? "開始日" : "完了予定日"}を ${md(dateNo(from))} → ${md(dateNo(to))} にしました（元に戻す：Ctrl+Z）`);
+    save(); if(RENDER.kotei) RENDER.kotei(); refresh(); return;
+  }
   gPushUndo(`${base.name}${g.ids.length > 1 ? ` ほか${g.ids.length - 1}項目` : ""} ${g.dd > 0 ? "+" : ""}${g.dd}日`);
   g.ids.forEach(id => {
     const it = itemById(id); if(!it) return;
@@ -1900,6 +1936,17 @@ document.addEventListener("pointerdown", e => {
     gSel.ids = gSel.ids.includes(id) ? gSel.ids.filter(x => x !== id) : [...gSel.ids, id];
     gPaintSel(); return;
   }
+  const edge = gEdgeOf(bar, e.clientX);
+  if(edge){                                            // 起点の項目の端をつかんだ：開始日だけ／完了予定日だけを動かす
+    const tr = track.getBoundingClientRect(), br = bar.getBoundingClientRect();
+    const els = [...gantt.querySelectorAll(`[data-gm="${id}"]`)];
+    const tip = document.createElement("div"); tip.className = "g-dragtip"; document.body.appendChild(tip);
+    gDrag = {mode:edge, id, ids:[id], bar, els, tip, x0:e.clientX, dd:0, s0:bar.dataset.s0, e0:bar.dataset.e0, left0:bar.style.left, width0:bar.style.width,
+             L:br.left - tr.left, W:br.width, dayPx: tr.width * Number(gantt.dataset.gk) / 100};
+    try{ bar.setPointerCapture(e.pointerId); }catch(_){}
+    document.body.classList.add("g-dragging", edge === "s" ? "g-rs-s" : "g-rs-e");
+    gPreview(0); return;
+  }
   if(!gSel || !gSel.ids.includes(id)) gSelect(id, false);       // 選択していないバーを押したら、その項目と連動項目を選び直す
   const ids = gSel.ids.slice();
   const els = []; ids.forEach(x => gantt.querySelectorAll(`[data-gm="${x}"]`).forEach(el => { el.classList.add("g-moving"); els.push(el); }));
@@ -1911,6 +1958,11 @@ document.addEventListener("pointerdown", e => {
   gPreview(0);
 });
 document.addEventListener("pointermove", e => {
+  if(!gDrag && gEdit){
+    const bar = e.target.closest && e.target.closest(".g-bar[data-gbar]");
+    $$(".g-bar.g-edge-s,.g-bar.g-edge-e").forEach(b => { if(b !== bar) b.classList.remove("g-edge-s", "g-edge-e"); });
+    if(bar){ const ed = gEdgeOf(bar, e.clientX); bar.classList.toggle("g-edge-s", ed === "s"); bar.classList.toggle("g-edge-e", ed === "e"); }
+  }
   if(!gDrag) return;
   const dd = Math.round((e.clientX - gDrag.x0) / (gDrag.dayPx || 1));
   if(dd !== gDrag.dd){ gDrag.dd = dd; gPreview(dd); }
@@ -4368,7 +4420,7 @@ aiInit();
 /* ============================================================
    公開版（GitHub Pages）用：更新のお知らせ・ホーム画面への追加・専用リンクの表示
    ============================================================ */
-const APP_VERSION = '18';
+const APP_VERSION = '19';
 (() => {
   const isWeb = /^https?:$/.test(location.protocol);
   // 専用リンクの結果／未設定の案内
