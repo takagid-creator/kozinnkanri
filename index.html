@@ -524,6 +524,7 @@ body.g-dragging,body.g-dragging *{cursor:ew-resize!important;user-select:none!im
 .g-selinfo{font-size:12.5px;color:#4C3FD0;font-weight:700}
 .g-clr,.g-undo{border:1px solid #D9D3FB;background:#fff;color:#4C3FD0;border-radius:999px;padding:6px 14px;font:inherit;font-size:12.5px;cursor:pointer}
 .g-clr:hover,.g-undo:hover{background:#F4F2FF}
+.g-num{display:inline-flex;gap:4px;align-items:center}.g-num input{width:70px;border:1px solid #D9D3FB;border-radius:999px;padding:5px 10px;font:inherit;font-size:12.5px;text-align:right}
 .g-undo small{margin-left:8px;color:#7C8AA0;font-size:11px}
 .gantt.editing .g-track{background:repeating-linear-gradient(90deg,transparent 0,transparent 23px,rgba(109,93,246,.04) 23px,rgba(109,93,246,.04) 24px)}
 .g-bar.g-sel{box-shadow:0 0 0 2px #6D5DF6}
@@ -1875,6 +1876,15 @@ function gHandles(){
   if(!bar || !end) return;
   end.insertAdjacentHTML("beforeend", `<span class="g-handles"><button type="button" class="g-h" data-gh="m" title="左右にドラッグ：期間ごとずらす（連動する項目も一緒）">⇔ 期間</button><button type="button" class="g-h" data-gh="s" title="左右にドラッグ：開始日だけを動かす">→ 開始日</button><button type="button" class="g-h" data-gh="e" title="左右にドラッグ：完了日だけを動かす">← 完了日</button></span>`);
 }
+// ドラッグ中、長丸の横の開始日・完了日の表示をその場で書き換える（mode：""＝期間ごと、"s"＝開始日だけ、"e"＝完了日だけ）
+function gLabel(els, dd, mode){
+  els.forEach(el => {
+    const id = el.dataset.gm, bar = id && document.querySelector(`#gantt .g-bar[data-gm="${id}"]`); if(!bar || !bar.dataset.s0) return;
+    const s1 = dateNo(bar.dataset.s0) + (mode === "e" ? 0 : dd), e1 = dateNo(bar.dataset.e0) + (mode === "s" ? 0 : dd);
+    const st = el.querySelector && el.querySelector(".g-start"); if(st && mode !== "e") st.textContent = md(s1);
+    if(el.classList.contains("g-end") && mode !== "s" && el.firstChild && el.firstChild.nodeType === 3) el.firstChild.nodeValue = md(e1);
+  });
+}
 function gPreview(dd){
   if(!gDrag) return;
   if(gDrag.mode){                                      // 開始日だけ／完了予定日だけを動かす
@@ -1886,14 +1896,14 @@ function gPreview(dd){
     g.els.forEach(el => { if(el === g.bar) return; const lead = el.classList.contains("g-lead");
       el.style.transform = (g.mode === "s" ? lead : !lead) && dd ? `translateX(${px}px)` : ""; });
     const s1 = dateNo(g.s0) + (g.mode === "s" ? dd : 0), e1 = dateNo(g.e0) + (g.mode === "e" ? dd : 0);
-    g.els.forEach(el => { const st = el.querySelector && el.querySelector(".g-start"); if(st && g.mode === "s") st.textContent = md(s1);
-      if(el.classList.contains("g-end") && g.mode === "e" && el.firstChild && el.firstChild.nodeType === 3) el.firstChild.nodeValue = md(e1); });
+    gLabel(g.els, dd, g.mode);
     g.tip.textContent = g.mode === "s" ? `開始日 ${md(dateNo(g.s0))} → ${md(s1)}（期間 ${e1 - s1 + 1}日）` : `完了予定日 ${md(dateNo(g.e0))} → ${md(e1)}（期間 ${e1 - s1 + 1}日）`;
     const r = g.bar.getBoundingClientRect(); g.tip.style.left = (r.left + r.width / 2) + "px"; g.tip.style.top = (r.top - 8) + "px";
     return;
   }
   const px = dd * gDrag.dayPx;
   gDrag.els.forEach(el => { el.style.transform = dd ? `translateX(${px}px)` : ""; });
+  gLabel(gDrag.els, dd, "");
   const t = gDrag.tip;
   t.textContent = dd ? `${dd > 0 ? "+" : ""}${dd}日　${md(dateNo(gDrag.s0) + dd)}〜${md(dateNo(gDrag.e0) + dd)}${gDrag.ids.length > 1 ? `（ほか ${gDrag.ids.length - 1} 項目も）` : ""}` : `ドラッグでずらす（選択中 ${gDrag.ids.length} 項目）`;
   const r = gDrag.bar.getBoundingClientRect();
@@ -1918,7 +1928,7 @@ function gEnd(commit){
   document.body.classList.remove("g-rs-s", "g-rs-e");
   g.tip.remove(); g.els.forEach(el => { el.style.transform = ""; el.classList.remove("g-moving"); });
   if(g.mode){ g.bar.style.left = g.left0; g.bar.style.width = g.width0; }
-  if(!commit || !g.dd){ gToolbar(); return; }   // クリックだけ（ずらしていない）なら、右上の「選択中 ○項目」を更新するだけ
+  if(!commit || !g.dd){ gLabel(g.els, 0, g.mode || ""); gToolbar(); return; }   // クリックだけ（ずらしていない）なら、右上の「選択中 ○項目」を更新するだけ
   const p = P(), info = p.info, base = itemById(g.id); if(!base) return;
   if(g.mode){                                          // 開始日だけ／完了予定日だけ（期間が変わる。連動項目は動かさない）
     const f = g.mode === "s" ? "workStart" : "due", from = g.mode === "s" ? g.s0 : g.e0, to = isoAdd(from, g.dd);
@@ -1929,14 +1939,19 @@ function gEnd(commit){
     toast(`${base.name} の${g.mode === "s" ? "開始日" : "完了予定日"}を ${md(dateNo(from))} → ${md(dateNo(to))} にしました（元に戻す：Ctrl+Z）`);
     save(); if(RENDER.kotei) RENDER.kotei(); refresh(); return;
   }
-  gPushUndo(`${base.name}${g.ids.length > 1 ? ` ほか${g.ids.length - 1}項目` : ""} ${g.dd > 0 ? "+" : ""}${g.dd}日`);
-  g.ids.forEach(id => {
+  gShiftSel(g.ids, base, g.dd);
+}
+// 選んだ項目をまとめて dd 日ずらす（ドラッグと「日数でずらす」の共通処理）
+function gShiftSel(ids, base, dd){
+  const info = P().info;
+  gPushUndo(`${base.name}${ids.length > 1 ? ` ほか${ids.length - 1}項目` : ""} ${dd > 0 ? "+" : ""}${dd}日`);
+  ids.forEach(id => {
     const it = itemById(id); if(!it) return;
     const s0 = it.workStart || info.startDate, e0 = it.due || info.endDate;
-    if(s0) it.workStart = isoAdd(s0, g.dd);
-    if(e0) it.due = isoAdd(e0, g.dd);
+    if(s0) it.workStart = isoAdd(s0, dd);
+    if(e0) it.due = isoAdd(e0, dd);
   });
-  toast(`${base.name}${g.ids.length > 1 ? ` ほか ${g.ids.length - 1} 項目` : ""} を ${g.dd > 0 ? "+" : ""}${g.dd}日ずらしました（元に戻す：Ctrl+Z）`);
+  toast(`${base.name}${ids.length > 1 ? ` ほか ${ids.length - 1} 項目` : ""} を ${dd > 0 ? "+" : ""}${dd}日ずらしました（元に戻す：Ctrl+Z）`);
   save(); if(RENDER.kotei) RENDER.kotei(); refresh();
 }
 document.addEventListener("pointerdown", e => {
@@ -2025,7 +2040,12 @@ document.addEventListener("keydown", e => {
   if((e.ctrlKey || e.metaKey) && !e.shiftKey && (e.key === "z" || e.key === "Z") && !typing){ e.preventDefault(); gUndoLast(); }
 });
 document.addEventListener("click", e => {
-  const t = e.target.closest && e.target.closest("[data-gundo],[data-gmode],[data-gclr]"); if(!t || VIEW_MODE) return;
+  const t = e.target.closest && e.target.closest("[data-gundo],[data-gmode],[data-gclr],[data-gshift]"); if(!t || VIEW_MODE) return;
+  if(t.dataset.gshift){
+    const n = Math.round(Number(z2h(($("#gShiftN") || {}).value || "")));
+    if(!gSel || !n){ toast("ずらす日数を入れてください（例：30、-30）"); return; }
+    const base = itemById(gSel.anchor); if(base) gShiftSel(gSel.ids, base, n); return;
+  }
   if(t.dataset.gundo){ gUndoLast(); return; }
   if(t.dataset.gclr){ gSel = null; gPaintSel(); return; }
   if(t.dataset.gmode){ gEdit = !gEdit; if(!gEdit) gSel = null; renderGantt(derive(P())); toast(gEdit ? "工程編集モード：バーをクリックして選び、ドラッグでずらせます" : "工程編集モードを終了しました"); }
@@ -2047,7 +2067,7 @@ function gToolbar(){
   el.innerHTML = `<button type="button" class="g-mode${gEdit ? " on" : ""}" data-gmode="1" aria-pressed="${gEdit}">${gEdit ? "工程編集モード：ON" : "工程編集モード"}</button>
     ${gEdit ? `<div class="g-tools-in">
       <span class="g-selinfo">${gSel ? `選択中 ${gSel.ids.length} 項目` : "バーをクリックして選択"}</span>
-      ${gSel ? `<button type="button" class="g-clr" data-gclr="1">選択を解除</button>` : ""}
+      ${gSel ? `<button type="button" class="g-clr" data-gclr="1">選択を解除</button><span class="g-num"><input type="number" id="gShiftN" step="1" placeholder="±日数" title="選択中の項目を、入れた日数だけまとめてずらします（マイナスで前へ）"><button type="button" class="g-clr" data-gshift="1">日ずらす</button></span>` : ""}
       <button type="button" class="g-undo" data-gundo="1"${last ? "" : " disabled"} title="Ctrl+Z でも戻せます">↶ 元に戻す${last ? `<small>${esc(last.label)}${undos.length > 1 ? `（あと ${undos.length} 回）` : ""}</small>` : ""}</button>
       <button type="button" class="g-exit" data-gmode="1">終了</button>
     </div>` : ""}`;
@@ -2644,12 +2664,17 @@ document.addEventListener("change", e => {
     const v = parseDateInput(el.value);
     if(v === null){ el.classList.add("bad"); toast("日付として読み取れません（例：10/6、2026/10/6、20261006、R8.10.6、今日）"); return; }
     el.classList.remove("bad");
-    if(el.dataset.s === "info") P().info[el.dataset.k] = v; else { const it = itemById(el.closest("tr").dataset.id); if(it) it[el.dataset.k] = v; }
+    let addAsk = null;
+    if(el.dataset.s === "info") P().info[el.dataset.k] = v; else { const it = itemById(el.closest("tr").dataset.id);
+      if(it){ const had = el.dataset.had ? el.dataset.had === "1" : !!(it.workStart && it.due); it[el.dataset.k] = v; el.dataset.had = it.workStart && it.due ? "1" : "0";
+        // 新しく足した項目（開始日・完了日が未入力だった項目）に、開始日と完了日の両方が入った
+        if(!had && it.workStart && it.due && (el.dataset.k === "workStart" || el.dataset.k === "due") && el.closest("#v-kotei")) addAsk = it; } }
     el.value = el.dataset.plain ? showDatePlain(v) : showDate(v);
     // 工程タブ：作業開始日・完了予定日をずらしたら、以降の未完了の項目も同じ日数ずらす
     if(el.dataset.s === "item" && (el.dataset.k === "workStart" || el.dataset.k === "due") && el.closest("#v-kotei")){
       const old = el.dataset.old || "", ch = followShiftFrom(el.closest("tr").dataset.id, el.dataset.k, old, v);
       el.dataset.old = v; if(ch){ save(); RENDER.kotei(); refresh(); return; } }
+    if(addAsk && addShiftAsk(addAsk)){ save(); RENDER.kotei(); refresh(); return; }
     save(); refresh(); return;
   }
   if(el.dataset.struct === "1"){ const it = itemById(el.closest("tr").dataset.id); it.kbn = el.value; el.closest("tr").className = cls(it); save(); refresh(); }
@@ -3421,6 +3446,21 @@ document.addEventListener("keydown", e => {
 document.addEventListener("compositionend", e => {
   const el = e.target; if(el.dataset && el.dataset.s === "item" && (el.dataset.k === "worker" || el.dataset.k === "worker2" || el.dataset.k === "ratio2")) el.dispatchEvent(new Event("input", {bubbles:true}));
 });
+// 項目を追加して開始日・完了日を入れたとき：同じ作業者で、その項目の開始日以降に始まる未完了の項目を、追加した項目の作業日数ぶん後ろへずらす（確認してOKのときだけ）
+function addShiftAsk(it){
+  const p = P(), info = p.info, w = workerOf(it, info), s = dateNo(it.workStart), days = dateNo(it.due) - s + 1;
+  if(s === null || !(days > 0)) return false;
+  const targets = p.items.filter(x => { if(x.id === it.id || !String(x.name || "").trim() || x.done || workerOf(x, info) !== w) return false;
+    const st = dateNo(x.workStart || info.startDate); return st !== null && st >= s; });
+  if(!targets.length) return false;
+  const list = targets.slice(0, 8).map(x => "・" + x.name).join("\n") + (targets.length > 8 ? `\n　ほか ${targets.length - 8} 項目` : "");
+  if(!confirm(`${w || "（作業者未入力）"}さんの後工程の項目を${days}日ずらしますか？\n\n対象（${md(s)} 以降に始まる未完了の項目）：\n${list}`)) return false;
+  gUndo.push({pid:p.id, label:`${it.name || "項目"} の追加で後工程を +${days}日`, dates:p.items.map(x => ({id:x.id, workStart:x.workStart, due:x.due}))});
+  targets.forEach(x => { const s0 = x.workStart || info.startDate, e0 = x.due || info.endDate;
+    if(s0) x.workStart = isoAdd(s0, days); if(e0) x.due = isoAdd(e0, days); });
+  toast(`${w}さんの後工程 ${targets.length} 項目を +${days}日ずらしました（元に戻す：入力欄の外で Ctrl+Z）`);
+  return true;
+}
 // 日付のずらし：連動する項目（作業者が同じ・未完了・この項目の開始日以降に始まる項目）の作業開始日・完了予定日を、同じ日数だけ動かす
 function followShiftFrom(id, key, oldIso, newIso){
   if(!followShift || !oldIso || !newIso) return 0;
@@ -3431,6 +3471,9 @@ function followShiftFrom(id, key, oldIso, newIso){
   // 連動する項目は、集計タブの工程編集モードと同じ（作業者が同じ・未完了・この項目の開始日〈ずらす前〉以降に始まる項目）
   const self = p.items[idx], startOld = key === "workStart" ? oldIso : (self.workStart || info.startDate);
   const ids = new Set(linkedIds(id, startOld));
+  ids.delete(id);
+  if(ids.size) gUndo.push({pid:p.id, label:`${self.name || "項目"} の${key === "workStart" ? "開始日" : "完了予定日"}変更で連動ずらし ${delta > 0 ? "+" : ""}${delta}日`,
+    dates:p.items.map(x => ({id:x.id, workStart:x.id === id && key === "workStart" ? oldIso : x.workStart, due:x.id === id && key === "due" ? oldIso : x.due}))});
   p.items.forEach(it => {
     if(!ids.has(it.id)) return;
     const s0 = it.workStart || info.startDate, e0 = it.due || info.endDate; let moved = false;
@@ -3438,13 +3481,14 @@ function followShiftFrom(id, key, oldIso, newIso){
     if(e0){ it.due = add(e0, delta); moved = true; }
     if(moved) n++;
   });
-  if(n) toast(`連動する ${n} 項目も ${delta > 0 ? "+" : ""}${delta}日ずらしました`);
+  if(n) toast(`連動する ${n} 項目も ${delta > 0 ? "+" : ""}${delta}日ずらしました（元に戻す：入力欄の外で Ctrl+Z、または集計タブの「元に戻す」）`);
   return n;
 }
 document.addEventListener("focusin", e => {      // ずらす前の日付を覚えておく
   const el = e.target; if(!el.dataset || !el.dataset.date || el.dataset.s !== "item" || !el.closest("#v-kotei")) return;
   const it = itemById(el.closest("tr").dataset.id), info = P().info; if(!it) return;
-  el.dataset.old = it[el.dataset.k] || (el.dataset.k === "workStart" ? info.startDate : el.dataset.k === "due" ? info.endDate : "") || "";
+  el.dataset.old = it[el.dataset.k] || "";
+  el.dataset.had = it.workStart && it.due ? "1" : "0";        // 入力前に開始日・完了日の両方が入っていたか（入力中に値が書き換わる前の状態）      // 空欄（新しく足した項目など）から日付を入れたときは、後ろの項目を動かさない
 });
 document.addEventListener("change", e => { const c = e.target; if(c && c.id === "followShift"){ followShift = c.checked; try{ localStorage.setItem("koutei_follow", c.checked ? "1" : "0"); }catch(_){} } });
 document.addEventListener("keydown", e => {
@@ -4468,7 +4512,7 @@ aiInit();
 /* ============================================================
    公開版（GitHub Pages）用：更新のお知らせ・ホーム画面への追加・専用リンクの表示
    ============================================================ */
-const APP_VERSION = '21';
+const APP_VERSION = '24';
 (() => {
   const isWeb = /^https?:$/.test(location.protocol);
   // 専用リンクの結果／未設定の案内
